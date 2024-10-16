@@ -1,8 +1,6 @@
-# Aliyun Push Flutter Plugin
-
 # 阿里云移动推送 Flutter 插件
 
-本插件是基于 [阿里云官方移动推送插件](https://pub-web.flutter-io.cn/packages/aliyun_push) 的重新开发版本，使用 Kotlin 和 Swift 分别编写 Android 和 iOS 平台的原生代码，旨在提供最新的阿里云推送功能支持和改进的用户体验。
+本插件是基于 [阿里云官方推送插件](https://pub.dev/packages/aliyun_push) 的重新开发版本，使用 Kotlin 和 Swift 分别编写 Android 和 iOS 平台的原生代码，旨在提供最新的阿里云推送功能支持和改进的用户体验。
 
 ## 特性
 
@@ -69,47 +67,12 @@ AppKey 和 AppSecret 请务必写在`<application>`标签下，否则 SDK 会报
 
 **2. 消息接收 Receiver 配置**
 
-创建消息接收 Receiver，继承自 com.alibaba.sdk.android.push.MessageReceiver，并在对应回调中添加业务处理逻辑，可参考以下代码：
-
-```java
-public class MyMessageReceiver extends MessageReceiver {
-    // 消息接收部分的LOG_TAG
-    public static final String REC_TAG = "receiver";
-    @Override
-    public void onNotification(Context context, String title, String summary, Map<String, String> extraMap) {
-        // TODO处理推送通知
-        Log.e("MyMessageReceiver", "Receive notification, title: " + title + ", summary: " + summary + ", extraMap: " + extraMap);
-    }
-    @Override
-    public void onMessage(Context context, CPushMessage cPushMessage) {
-            Log.e("MyMessageReceiver", "onMessage, messageId: " + cPushMessage.getMessageId() + ", title: " + cPushMessage.getTitle() + ", content:" + cPushMessage.getContent());
-    }
-    @Override
-    public void onNotificationOpened(Context context, String title, String summary, String extraMap) {
-        Log.e("MyMessageReceiver", "onNotificationOpened, title: " + title + ", summary: " + summary + ", extraMap:" + extraMap);
-    }
-    @Override
-    protected void onNotificationClickedWithNoAction(Context context, String title, String summary, String extraMap) {
-        Log.e("MyMessageReceiver", "onNotificationClickedWithNoAction, title: " + title + ", summary: " + summary + ", extraMap:" + extraMap);
-    }
-    @Override
-    protected void onNotificationReceivedInApp(Context context, String title, String summary, Map<String, String> extraMap, int openType, String openActivity, String openUrl) {
-        Log.e("MyMessageReceiver", "onNotificationReceivedInApp, title: " + title + ", summary: " + summary + ", extraMap:" + extraMap + ", openType:" + openType + ", openActivity:" + openActivity + ", openUrl:" + openUrl);
-    }
-    @Override
-    protected void onNotificationRemoved(Context context, String messageId) {
-        Log.e("MyMessageReceiver", "onNotificationRemoved");
-    }
-}
-
-```
-
 将该 receiver 添加到 AndroidManifest.xml 文件中：
 
 ```xml
-<!-- 消息接收监听器 （用户可自主扩展） -->
+<!-- 接收推送消息 -->
 <receiver
-    android:name=".MyMessageReceiver"
+    android:name="com.aliyun.ams.push.AliyunPushMessageReceiver"
     android:exported="false"> <!-- 为保证receiver安全，建议设置不可导出，如需对其他应用开放可通过android：permission进行限制 -->
     <intent-filter>
         <action android:name="com.alibaba.push2.action.NOTIFICATION_OPENED" />
@@ -124,7 +87,30 @@ public class MyMessageReceiver extends MessageReceiver {
 
 ```
 
-**3. 混淆配置**
+**3. 辅助弹窗 PopupActivity 配置**
+
+将 PushPopupActivity 添加到 AndroidManifest.xml 文件中：
+
+```xml
+<!-- 辅助弹窗Activity -->
+<activity
+    android:name="com.aliyun.ams.push.PushPopupActivity"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+            android:host="${applicationId}"
+            android:path="/thirdpush"
+            android:scheme="agoo" />
+    </intent-filter>
+</activity>
+```
+
+
+**4. 混淆配置**
 
 如果您的项目中使用 Proguard 等工具做了代码混淆，请保留以下配置：
 
