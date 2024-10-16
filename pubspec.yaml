@@ -1,7 +1,7 @@
 name: aliyun_push_flutter
 description: "Aliyun Push Flutter plugin."
-version: 1.0.0
-repository: "https://github.com/OpenMindOpenWorld/aliyun-push-flutter-plugin"
+version: 1.1.0
+homepage: "https://help.aliyun.com/document_detail/2584336.html"
 
 environment:
   sdk: ">=3.4.4 <4.0.0"
