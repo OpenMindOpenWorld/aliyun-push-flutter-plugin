@@ -32,6 +32,12 @@
         <meta-data android:name="com.meizu.push.id" android:value="" />
         <meta-data android:name="com.meizu.push.key" android:value="" />
 
+        <!-- fcm -->
+        <meta-data android:name="com.gcm.push.sendid" android:value="" />
+        <meta-data android:name="com.gcm.push.applicationid" android:value="" />
+        <meta-data android:name="com.gcm.push.projectid" android:value="" />
+        <meta-data android:name="com.gcm.push.api.key" android:value="" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

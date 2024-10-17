@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.alibaba.sdk.android.push.HonorRegister
 import com.alibaba.sdk.android.push.huawei.HuaWeiRegister
+import com.alibaba.sdk.android.push.register.GcmRegister
 import com.alibaba.sdk.android.push.register.MeizuRegister
 import com.alibaba.sdk.android.push.register.MiPushRegister
 import com.alibaba.sdk.android.push.register.OppoRegister
@@ -122,4 +123,28 @@ object AliyunThirdPushUtils {
     }
 
     private fun getHonorAppId(context: Context) = getAppMetaData(context, "com.hihonor.push.app_id")
+
+    // FCM
+    fun registerGCM(application: Application) {
+        val sendId = getGCMSendId(application)
+        val applicationId = getGCMApplicationId(application)
+        val projectId = getGCMProjectId(application)
+        val apiKey = getGCMApiKey(application)
+
+        if (sendId != null && applicationId != null && projectId != null && apiKey != null) {
+            GcmRegister.register(application, sendId, applicationId, projectId, apiKey)
+        }
+    }
+
+    private fun getGCMSendId(context: Context) =
+        getAppMetaDataWithId(context, "com.gcm.push.sendid")
+
+    private fun getGCMApplicationId(context: Context) =
+        getAppMetaDataWithId(context, "com.gcm.push.applicationid")
+
+    private fun getGCMProjectId(context: Context) =
+        getAppMetaDataWithId(context, "com.gcm.push.projectid")
+
+    private fun getGCMApiKey(context: Context) =
+        getAppMetaDataWithId(context, "com.gcm.push.api.key")
 }

@@ -161,6 +161,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
             AliyunThirdPushUtils.registerOppoPush(context)
             AliyunThirdPushUtils.registerMeizuPush(context)
             AliyunThirdPushUtils.registerHonorPush(context)
+            AliyunThirdPushUtils.registerGCM(context)
 
             map[CODE_KEY] = CODE_SUCCESS
         } else {
