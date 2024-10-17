@@ -1,4 +1,11 @@
+## 1.1.1
+
+- Android SDK 升级至 3.9.1
+- 集成 Google 推送通道
+- 更新 example
+
 ## 1.1.0
+
 - Android 集成辅助弹窗
 - 更新 example
 - 更新 README.md
