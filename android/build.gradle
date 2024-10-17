@@ -59,7 +59,7 @@ android {
     }
 
     dependencies {
-        api 'com.aliyun.ams:alicloud-android-push:3.9.0'
+        api 'com.aliyun.ams:alicloud-android-push:3.9.1'
 
         api "com.aliyun.ams:alicloud-android-third-push:3.9.0"
         api "com.aliyun.ams:alicloud-android-third-push-meizu:3.9.0"
@@ -68,6 +68,7 @@ android {
         api "com.aliyun.ams:alicloud-android-third-push-xiaomi:3.9.0"
         api "com.aliyun.ams:alicloud-android-third-push-huawei:3.9.0"
         api "com.aliyun.ams:alicloud-android-third-push-honor:3.9.0"
+        api "com.aliyun.ams:alicloud-android-third-push-fcm:3.9.0"
 
         implementation 'androidx.core:core-ktx:1.13.1'
 
