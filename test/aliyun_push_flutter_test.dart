@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:aliyun_push_flutter/aliyun_push_flutter.dart';
 import 'package:aliyun_push_flutter/aliyun_push_flutter_platform_interface.dart';
-import 'package:aliyun_push_flutter/aliyun_push_flutter_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockAliyunPushFlutterPlatform

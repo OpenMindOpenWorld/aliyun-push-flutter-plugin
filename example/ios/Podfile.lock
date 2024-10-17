@@ -37,7 +37,7 @@ SPEC CHECKSUMS:
   AlicloudUtils: ef4436f52b828b1182b002373758ecb88068e679
   aliyun_push_flutter: 5b33b46510e6f1b7cb487eb5e0d1fa5df62cb574
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  integration_test: ce0a3ffa1de96d1a89ca0ac26fca7ea18a749ef4
+  integration_test: 13825b8a9334a850581300559b8839134b124670
 
 PODFILE CHECKSUM: 7e12abdb2b7e20633f470f68b57681df76aa752a
 
