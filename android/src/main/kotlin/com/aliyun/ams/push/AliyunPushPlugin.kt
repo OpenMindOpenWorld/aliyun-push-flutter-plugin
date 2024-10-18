@@ -94,6 +94,9 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
             "clearNotifications" -> clearNotifications(result)
             "createChannel" -> createChannel(call, result)
             "createChannelGroup" -> createChannelGroup(call, result)
+            "checkPushChannelStatus" -> checkPushChannelStatus(result)
+            "turnOnPushChannel" -> turnOnPushChannel(result)
+            "turnOffPushChannel" -> turnOffPushChannel(result)
             "isNotificationEnabled" -> isNotificationEnabled(call, result)
             "jumpToNotificationSettings" -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -114,13 +117,14 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         channel.setMethodCallHandler(null)
     }
 
+    // 注册推送通道
     private fun initPush(result: Result) {
         PushServiceFactory.init(mContext)
 
         val pushService = PushServiceFactory.getCloudPushService()
         pushService.setLogLevel(CloudPushService.LOG_DEBUG)
         pushService.register(mContext, object : CommonCallback {
-            override fun onSuccess(response: String) {
+            override fun onSuccess(response: String?) {
                 val map = HashMap<String, String>()
                 map[CODE_KEY] = CODE_SUCCESS
 
@@ -176,6 +180,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 关闭日志
     private fun closePushLog(result: Result) {
         val service = PushServiceFactory.getCloudPushService()
         service.setLogLevel(CloudPushService.LOG_OFF)
@@ -190,6 +195,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 获取设备标识
     private fun getDeviceId(result: Result) {
         val pushService = PushServiceFactory.getCloudPushService()
         val deviceId = pushService.deviceId
@@ -201,6 +207,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 设置日志等级
     private fun setLogLevel(call: MethodCall, result: Result) {
         val level = call.argument<Int>("level")
         val map = HashMap<String, String>()
@@ -221,6 +228,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 绑定账号
     private fun bindAccount(call: MethodCall, result: Result) {
         val account = call.argument<String>("account")
         val map = HashMap<String, String>()
@@ -236,9 +244,8 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
             }
         } else {
             val pushService = PushServiceFactory.getCloudPushService()
-
             pushService.bindAccount(account, object : CommonCallback {
-                override fun onSuccess(response: String) {
+                override fun onSuccess(response: String?) {
                     map[CODE_KEY] = CODE_SUCCESS
 
                     try {
@@ -262,12 +269,13 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 解绑账号
     private fun unbindAccount(result: Result) {
         val map = HashMap<String, String>()
-        val pushService = PushServiceFactory.getCloudPushService()
 
+        val pushService = PushServiceFactory.getCloudPushService()
         pushService.unbindAccount(object : CommonCallback {
-            override fun onSuccess(response: String) {
+            override fun onSuccess(response: String?) {
                 map[CODE_KEY] = CODE_SUCCESS
 
                 try {
@@ -290,6 +298,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         })
     }
 
+    // 添加别名
     private fun addAlias(call: MethodCall, result: Result) {
         val alias = call.argument<String>("alias")
         val map = HashMap<String, String>()
@@ -330,6 +339,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 删除别名
     private fun removeAlias(call: MethodCall, result: Result) {
         val alias = call.argument<String>("alias")
         val map = HashMap<String, String>()
@@ -370,10 +380,11 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 查询别名
     private fun listAlias(result: Result) {
         val map = HashMap<String, String>()
-        val pushService = PushServiceFactory.getCloudPushService()
 
+        val pushService = PushServiceFactory.getCloudPushService()
         pushService.listAliases(object : CommonCallback {
             override fun onSuccess(response: String) {
                 map[CODE_KEY] = CODE_SUCCESS
@@ -399,11 +410,12 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         })
     }
 
+    // 绑定标签
     private fun bindTag(call: MethodCall, result: Result) {
-        val tags = call.argument<List<String>?>("tags")
+        val tags = call.argument<List<String>>("tags")
         val map = HashMap<String, String>()
 
-        if (tags == null || tags.isEmpty()) {
+        if (tags.isEmpty()) {
             map[CODE_KEY] = CODE_PARAM_ILLEGAL
             map[ERROR_MSG_KEY] = "tags can not be empty"
 
@@ -416,8 +428,8 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
             val target = call.argument<Int?>("target") ?: 1
             val alias = call.argument<String?>("alias")
             val tagsArray = tags.toTypedArray()
-            val pushService = PushServiceFactory.getCloudPushService()
 
+            val pushService = PushServiceFactory.getCloudPushService()
             pushService.bindTag(target, tagsArray, alias, object : CommonCallback {
                 override fun onSuccess(response: String) {
                     map[CODE_KEY] = CODE_SUCCESS
@@ -443,11 +455,12 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 解绑标签
     private fun unbindTag(call: MethodCall, result: Result) {
-        val tags = call.argument<List<String>?>("tags")
+        val tags = call.argument<List<String>>("tags")
         val map = HashMap<String, String>()
 
-        if (tags == null || tags.isEmpty()) {
+        if (tags.isEmpty()) {
             map[CODE_KEY] = CODE_PARAM_ILLEGAL
             map[ERROR_MSG_KEY] = "tags can not be empty"
 
@@ -460,8 +473,8 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
             val target = call.argument<Int?>("target") ?: 1
             val alias = call.argument<String?>("alias")
             val tagsArray = tags.toTypedArray()
-            val pushService = PushServiceFactory.getCloudPushService()
 
+            val pushService = PushServiceFactory.getCloudPushService()
             pushService.unbindTag(target, tagsArray, alias, object : CommonCallback {
                 override fun onSuccess(response: String) {
                     map[CODE_KEY] = CODE_SUCCESS
@@ -487,11 +500,12 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 查询标签
     private fun listTags(call: MethodCall, result: Result) {
         val target = call.argument<Int>("target") ?: 1
         val map = HashMap<String, String>()
-        val pushService = PushServiceFactory.getCloudPushService()
 
+        val pushService = PushServiceFactory.getCloudPushService()
         pushService.listTags(target, object : CommonCallback {
             override fun onSuccess(response: String) {
                 map[CODE_KEY] = CODE_SUCCESS
@@ -517,6 +531,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         })
     }
 
+    // 绑定电话号码
     private fun bindPhoneNumber(call: MethodCall, result: Result) {
         val phone = call.argument<String>("phone")
         val map = HashMap<String, String>()
@@ -557,6 +572,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 解绑电话号码
     private fun unbindPhoneNumber(result: Result) {
         val map = HashMap<String, String>()
         val pushService = PushServiceFactory.getCloudPushService()
@@ -585,6 +601,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         })
     }
 
+    // 设置通知折叠展示
     private fun setNotificationInGroup(call: MethodCall, result: Result) {
         val inGroup = call.argument<Boolean>("inGroup") ?: false
         val pushService = PushServiceFactory.getCloudPushService()
@@ -600,6 +617,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 删除所有通知
     private fun clearNotifications(result: Result) {
         val pushService = PushServiceFactory.getCloudPushService()
         pushService.clearNotifications()
@@ -614,6 +632,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 创建通知通道
     private fun createChannel(call: MethodCall, result: Result) {
         val map = HashMap<String, String>()
 
@@ -697,6 +716,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 创建通知通道的分组
     private fun createChannelGroup(call: MethodCall, result: Result) {
         val map = HashMap<String, String>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -730,6 +750,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    // 检查通知状态
     private fun isNotificationEnabled(call: MethodCall, result: Result) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = mContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -737,7 +758,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(false)
                 return
             }
-            val id = call.argument<String?>("id")
+            val id: String? = call.argument<String?>("id")
             if (id == null) {
                 result.success(true)
                 return
@@ -769,7 +790,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun jumpToAndroidNotificationSettings(call: MethodCall) {
-        val id = call.argument<String?>("id")
+        val id: String? = call.argument<String?>("id")
         val intent = if (id!=null) {
             Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).apply {
                 putExtra(Settings.EXTRA_APP_PACKAGE, mContext.packageName)
@@ -785,5 +806,93 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         mContext.startActivity(intent)
+    }
+
+    // 打开推送通道
+    private fun turnOnPushChannel(result: Result) {
+        val map = HashMap<String, String>()
+        val pushService = PushServiceFactory.getCloudPushService()
+
+        pushService.turnOnPushChannel(object : CommonCallback {
+            override fun onSuccess(response: String) {
+                map[CODE_KEY] = CODE_SUCCESS
+
+                try {
+                    result.success(map)
+                } catch (e: Exception) {
+                    AliyunPushLog.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+
+            override fun onFailed(errorCode: String, errorMsg: String) {
+                map[CODE_KEY] = errorCode
+                map[ERROR_MSG_KEY] = errorMsg
+
+                try {
+                    result.success(map)
+                } catch (e: Exception) {
+                    AliyunPushLog.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+        })
+    }
+
+    // 关闭推送通道
+    private fun turnOffPushChannel(result: Result) {
+        val map = HashMap<String, String>()
+        val pushService = PushServiceFactory.getCloudPushService()
+
+        pushService.turnOffPushChannel(object : CommonCallback {
+            override fun onSuccess(response: String) {
+                map[CODE_KEY] = CODE_SUCCESS
+
+                try {
+                    result.success(map)
+                } catch (e: Exception) {
+                    AliyunPushLog.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+
+            override fun onFailed(errorCode: String, errorMsg: String) {
+                map[CODE_KEY] = errorCode
+                map[ERROR_MSG_KEY] = errorMsg
+
+                try {
+                    result.success(map)
+                } catch (e: Exception) {
+                    AliyunPushLog.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+        })
+    }
+
+    // 查询推送通道状态
+    private fun checkPushChannelStatus(result: Result) {
+        val map = HashMap<String, String>()
+        val pushService = PushServiceFactory.getCloudPushService()
+
+        pushService.checkPushChannelStatus(object : CommonCallback {
+            override fun onSuccess(response: String) {
+                map[CODE_KEY] = CODE_SUCCESS
+                map["status"] = response
+
+                try {
+                    result.success(map)
+                } catch (e: Exception) {
+                    AliyunPushLog.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+
+            override fun onFailed(errorCode: String, errorMsg: String) {
+                map[CODE_KEY] = errorCode
+                map[ERROR_MSG_KEY] = errorMsg
+
+                try {
+                    result.success(map)
+                } catch (e: Exception) {
+                    AliyunPushLog.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+        })
     }
 }

@@ -248,4 +248,19 @@ class AliyunPushFlutter {
     return AliyunPushFlutterPlatform.instance
         .unbindTag(tags, target: target, alias: alias);
   }
+
+  /// Android 查询推送通道状态
+  Future<Map<dynamic, dynamic>> checkAndroidPushChannelStatus() async {
+    return AliyunPushFlutterPlatform.instance.checkAndroidPushChannelStatus();
+  }
+
+  /// Android 开启推送通道
+  Future<Map<dynamic, dynamic>> turnOnAndroidPushChannel() async {
+    return AliyunPushFlutterPlatform.instance.turnOnAndroidPushChannel();
+  }
+
+  /// Android 关闭推送通道
+  Future<Map<dynamic, dynamic>> turnOffAndroidPushChannel() async {
+    return AliyunPushFlutterPlatform.instance.turnOffAndroidPushChannel();
+  }
 }

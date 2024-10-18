@@ -199,6 +199,24 @@ class MockAliyunPushFlutterPlatform
     // TODO: implement unbindTag
     throw UnimplementedError();
   }
+
+  @override
+  Future<Map> checkAndroidPushChannelStatus() {
+    // TODO: implement checkAndroidPushChannelStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map> turnOffAndroidPushChannel() {
+    // TODO: implement turnOffAndroidPushChannel
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map> turnOnAndroidPushChannel() {
+    // TODO: implement turnOnAndroidPushChannel
+    throw UnimplementedError();
+  }
 }
 
 void main() {}

@@ -1,3 +1,8 @@
+## 1.1.2
+
+- 新增一些 Android 平台的 API
+- 更新 README.md
+
 ## 1.1.1
 
 - Android SDK 升级至 3.9.1

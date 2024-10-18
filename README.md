@@ -1,17 +1,62 @@
 # 阿里云移动推送 Flutter 插件
 
-本插件是基于 [阿里云官方推送插件](https://pub.dev/packages/aliyun_push) 的重新开发版本，使用 Kotlin 和 Swift 分别编写 Android 和 iOS 平台的原生代码，旨在提供最新的阿里云推送功能支持和改进的用户体验。
+参考 [阿里云官方推送插件](https://pub.dev/packages/aliyun_push) 的重新开发版本，使用 Kotlin 和 Swift 分别编写 Android 和 iOS 平台的原生代码，支持最新的阿里云推送功能。
 
 ## 特性
 
 - **跨平台支持**：兼容 Android 和 iOS 平台，支持最新版本的阿里云移动推送 SDK。
-- **高效稳定**：使用 Kotlin 和 Swift 开发，提升了性能和稳定性。
 - **问题修复**：修复了官方插件中的已知问题，提升了推送服务的可靠性。
 - **持续维护**：插件将跟随阿里云 SDK 更新，确保推送功能始终保持最新版本。
 
 ## 示例
 
 请查看 [example](/example/) 了解如何在项目中集成和使用该插件。
+
+## 新增 APIs
+
+### Android 查询推送通道状态
+
+
+`Future<Map<dynamic, dynamic>> checkAndroidPushChannelStatus()`
+
+返回值：
+
+`Map<dynamic, dynamic>`
+
+map 中包含三个 key 值:
+
+- `code`: 错误码
+- `errorMsg`: 错误信息
+- `status`: on表示推送通道打开，off表示推送通道关闭
+
+***
+
+### Android 开启推送通道
+`Future<Map<dynamic, dynamic>> turnOnAndroidPushChannel()`
+
+返回值：
+
+`Map<dynamic, dynamic>`
+
+map 中包含两个 key 值:
+
+- `code`: 错误码
+- `errorMsg`: 错误信息
+
+***
+
+### Android 关闭推送通道
+`Future<Map<dynamic, dynamic>> turnOffAndroidPushChannel()`
+
+返回值：
+
+`Map<dynamic, dynamic>`
+
+map 中包含两个 key 值:
+
+- `code`: 错误码
+- `errorMsg`: 错误信息
+
 
 ---
 
@@ -87,9 +132,9 @@ AppKey 和 AppSecret 请务必写在`<application>`标签下，否则 SDK 会报
 
 ```
 
-**3. 辅助弹窗 PopupActivity 配置**
+**3. 辅助弹窗 Activity 配置**
 
-将 PushPopupActivity 添加到 AndroidManifest.xml 文件中：
+将辅助弹窗 Activity 添加到 AndroidManifest.xml 文件中：
 
 ```xml
 <!-- 辅助弹窗Activity -->
@@ -108,6 +153,8 @@ AppKey 和 AppSecret 请务必写在`<application>`标签下，否则 SDK 会报
     </intent-filter>
 </activity>
 ```
+
+> **注意：`android:exported=true` 必须配置**
 
 
 **4. 混淆配置**

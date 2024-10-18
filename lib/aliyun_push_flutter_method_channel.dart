@@ -431,4 +431,46 @@ class MethodChannelAliyunPushFlutter extends AliyunPushFlutterPlatform {
         await methodChannel.invokeMethod('addAlias', {'alias': alias});
     return result;
   }
+
+  @override
+  Future<Map<dynamic, dynamic>> checkAndroidPushChannelStatus() async {
+    if (!Platform.isAndroid) {
+      return {
+        'code': kAliyunPushOnlyAndroid,
+        'errorMsg': 'Only support Android',
+      };
+    }
+
+    Map<dynamic, dynamic> result =
+        await methodChannel.invokeMethod('checkPushChannelStatus');
+    return result;
+  }
+
+  @override
+  Future<Map<dynamic, dynamic>> turnOnAndroidPushChannel() async {
+    if (!Platform.isAndroid) {
+      return {
+        'code': kAliyunPushOnlyAndroid,
+        'errorMsg': 'Only support Android',
+      };
+    }
+
+    Map<dynamic, dynamic> result =
+        await methodChannel.invokeMethod('turnOnPushChannel');
+    return result;
+  }
+
+  @override
+  Future<Map<dynamic, dynamic>> turnOffAndroidPushChannel() async {
+    if (!Platform.isAndroid) {
+      return {
+        'code': kAliyunPushOnlyAndroid,
+        'errorMsg': 'Only support Android',
+      };
+    }
+
+    Map<dynamic, dynamic> result =
+        await methodChannel.invokeMethod('turnOffPushChannel');
+    return result;
+  }
 }
