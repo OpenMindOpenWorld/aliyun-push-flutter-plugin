@@ -212,4 +212,22 @@ abstract class AliyunPushFlutterPlatform extends PlatformInterface {
   void setPluginLogEnabled(bool enabled) {
     throw UnimplementedError('setPluginLogEnabled() has not been implemented.');
   }
+
+  /// Android 查询推送通道状态
+  Future<Map<dynamic, dynamic>> checkAndroidPushChannelStatus() async {
+    throw UnimplementedError(
+        'checkAndroidPushChannelStatus() has not been implemented.');
+  }
+
+  /// Android 开启推送通道
+  Future<Map<dynamic, dynamic>> turnOnAndroidPushChannel() async {
+    throw UnimplementedError(
+        'turnOnAndroidPushChannel() has not been implemented.');
+  }
+
+  /// Android 关闭推送通道
+  Future<Map<dynamic, dynamic>> turnOffAndroidPushChannel() async {
+    throw UnimplementedError(
+        'turnOffAndroidPushChannel() has not been implemented.');
+  }
 }
