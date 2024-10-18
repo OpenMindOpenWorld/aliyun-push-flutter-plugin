@@ -17,15 +17,15 @@ class AliyunPushMessageReceiver : MessageReceiver() {
     override fun hookNotificationBuild(): NotificationConfigure {
         return object : NotificationConfigure {
             override fun configBuilder(builder: Notification.Builder, pushData: PushData) {
-                AliyunPushLog.e(TAG, "configBuilder")
+                AliyunPushLog.d(TAG, "configBuilder")
             }
 
             override fun configBuilder(builder: NotificationCompat.Builder, pushData: PushData) {
-                AliyunPushLog.e(TAG, "configBuilder")
+                AliyunPushLog.d(TAG, "configBuilder")
             }
 
             override fun configNotification(notification: Notification, pushData: PushData) {
-                AliyunPushLog.e(TAG, "configNotification")
+                AliyunPushLog.d(TAG, "configNotification")
             }
         }
     }
@@ -42,12 +42,13 @@ class AliyunPushMessageReceiver : MessageReceiver() {
         context: Context,
         title: String,
         summary: String,
-        extraMap: Map<String, String>?
+        extraMap: Map<String, String>
     ) {
-        val arguments = HashMap<String, Any>()
-        extraMap?.let { arguments.putAll(it) }
-        arguments["title"] = title
-        arguments["summary"] = summary
+        val arguments = mapOf(
+            "title" to title,
+            "summary" to summary,
+            "extraMap" to extraMap
+        )
         
         AliyunPushPlugin.sInstance.callFlutterMethod("onNotification", arguments)
     }
@@ -62,25 +63,27 @@ class AliyunPushMessageReceiver : MessageReceiver() {
         openActivity: String,
         openUrl: String
     ) {
-        val arguments = HashMap<String, Any>()
-        extraMap.let { arguments.putAll(it) }
-        arguments["title"] = title
-        arguments["summary"] = summary
-        arguments["openType"] = openType
-        arguments["openActivity"] = openActivity
-        arguments["openUrl"] = openUrl
+        val arguments = mapOf(
+            "title" to title,
+            "summary" to summary,
+            "extraMap" to extraMap,
+            "openType" to openType,
+            "openActivity" to openActivity,
+            "openUrl" to openUrl
+        )
 
         AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationReceivedInApp", arguments)
     }
 
     // 推送消息的回调方法
     override fun onMessage(context: Context, cPushMessage: CPushMessage) {
-        val arguments = HashMap<String, Any>()
-        arguments["title"] = cPushMessage.title
-        arguments["content"] = cPushMessage.content
-        arguments["msgId"] = cPushMessage.messageId
-        arguments["appId"] = cPushMessage.appId
-        arguments["traceInfo"] = cPushMessage.traceInfo
+        val arguments = mapOf(
+            "title" to cPushMessage.title,
+            "content" to cPushMessage.content,
+            "msgId" to cPushMessage.messageId,
+            "appId" to cPushMessage.appId,
+            "traceInfo" to cPushMessage.traceInfo
+        )
 
         AliyunPushPlugin.sInstance.callFlutterMethod("onMessage", arguments)
     }
@@ -92,18 +95,20 @@ class AliyunPushMessageReceiver : MessageReceiver() {
         summary: String,
         extraMap: String
     ) {
-        val arguments = HashMap<String, Any>()
-        arguments["title"] = title
-        arguments["summary"] = summary
-        arguments["extraMap"] = extraMap
+        val arguments = mapOf(
+            "title" to title,
+            "summary" to summary,
+            "extraMap" to extraMap
+        )
 
         AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationOpened", arguments)
     }
 
     // 通知删除回调
     override fun onNotificationRemoved(context: Context, messageId: String) {
-        val arguments = HashMap<String, Any>()
-        arguments["msgId"] = messageId
+        val arguments = mapOf(
+            "msgId" to messageId
+        )
 
         AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationRemoved", arguments)
     }
@@ -115,10 +120,11 @@ class AliyunPushMessageReceiver : MessageReceiver() {
         summary: String,
         extraMap: String
     ) {
-        val arguments = HashMap<String, Any>()
-        arguments["title"] = title
-        arguments["summary"] = summary
-        arguments["extraMap"] = extraMap
+        val arguments = mapOf(
+            "title" to title,
+            "summary" to summary,
+            "extraMap" to extraMap
+        )
 
         AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationClickedWithNoAction", arguments)
     }
