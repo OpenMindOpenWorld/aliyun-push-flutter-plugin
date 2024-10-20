@@ -415,7 +415,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         val tags = call.argument<List<String>>("tags")
         val map = HashMap<String, String>()
 
-        if (tags.isEmpty()) {
+        if (tags == null || tags.isEmpty()) {
             map[CODE_KEY] = CODE_PARAM_ILLEGAL
             map[ERROR_MSG_KEY] = "tags can not be empty"
 
@@ -460,7 +460,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         val tags = call.argument<List<String>>("tags")
         val map = HashMap<String, String>()
 
-        if (tags.isEmpty()) {
+        if (tags == null || tags.isEmpty()) {
             map[CODE_KEY] = CODE_PARAM_ILLEGAL
             map[ERROR_MSG_KEY] = "tags can not be empty"
 
