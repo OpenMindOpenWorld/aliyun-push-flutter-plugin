@@ -400,11 +400,11 @@ extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
     // 通知角标数清0
     UIApplication.shared.applicationIconBadgeNumber = 0
     // 同步角标数到服务端
-    syncBadgeNum(0, result: nil)
+    syncBadgeNum(UInt(0), result: nil)
 
     // 通知打开回执上报
     CloudPushSDK.sendNotificationAck(userInfo)
-    self.channel.invokeMethod("onNotification", arguments: userInfo)
+    channel?.invokeMethod("onNotification", arguments: userInfo)
   }
 
   public func userNotificationCenter(
