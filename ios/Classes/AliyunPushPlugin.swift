@@ -67,7 +67,9 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
     case "setBadgeNum":
       setBadgeNum(call, result: result)
     case "syncBadgeNum":
-      syncBadgeNum(call, result: result)
+      if let arguments = call.arguments as? [String: Any], let badgeNum = arguments["badgeNum"] as? Int {
+        syncBadgeNum(badgeNum, result: result)
+      }
     case "getApnsDeviceToken":
       getApnsDeviceToken(result: result)
     case "isChannelOpened":
@@ -101,14 +103,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 同步角标数
-  func syncBadgeNum(_ call: FlutterMethodCall, result: FlutterResult?) {
-    guard let arguments = call.arguments as? [String: Any],
-      let badgeNum = arguments["badgeNum"] as? Int
-    else {
-      result?([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "Invalid badge number"])
-      return
-    }
-
+  func syncBadgeNum(_ badgeNum: Int, result: FlutterResult?) {
     CloudPushSDK.syncBadgeNum(UInt(badgeNum)) { res in
       if let res = res, res.success {
         PushLogD("Sync badge num: [%d] success.", badgeNum)
@@ -404,7 +399,7 @@ extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
 
     // 通知打开回执上报
     CloudPushSDK.sendNotificationAck(userInfo)
-    self.channel.invokeMethod("onNotification", arguments: userInfo)
+    channel?.invokeMethod("onNotification", arguments: userInfo)
   }
 
   public func userNotificationCenter(
