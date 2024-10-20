@@ -392,13 +392,31 @@ extension AliyunPushPlugin {
 }
 
 extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
+  func handleIOS10Notification(_ notification: UNNotification) {
+    let request = notification.request
+    let content = request.content
+    let userInfo = content.userInfo
+
+    // 通知角标数清0
+    UIApplication.shared.applicationIconBadgeNumber = 0
+    // 同步角标数到服务端
+    syncBadgeNum(0, result: nil)
+
+    // 通知打开回执上报
+    CloudPushSDK.sendNotificationAck(userInfo)
+    self.channel.invokeMethod("onNotification", arguments: userInfo)
+  }
+
   public func userNotificationCenter(
     _ center: UNUserNotificationCenter, willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
     if showNoticeWhenForeground {
+      // 通知弹出，且带有声音、内容和角标
       completionHandler([.sound, .alert, .badge])
     } else {
+      // 处理iOS 10通知，并上报通知打开回执
+      handleIOS10Notification(notification)
       completionHandler([])
     }
   }
