@@ -81,6 +81,149 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
     }
   }
 
+  public func application(
+    _ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    CloudPushSDK.registerDevice(deviceToken) { res in
+      if let res = res, res.success {
+        PushLogD(
+          "Register deviceToken successfully, deviceToken: %@", CloudPushSDK.getApnsDeviceToken())
+        let dic = ["apnsDeviceToken": CloudPushSDK.getApnsDeviceToken()]
+        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenSuccess", arguments: dic)
+      } else {
+        PushLogD(
+          "Register deviceToken failed, error: %@", (res?.error as NSError?)?.description ?? "")
+        let dic = ["error": (res?.error as NSError?)?.description ?? ""]
+        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
+      }
+    }
+    PushLogD("####### ===> APNs register success")
+  }
+
+  public func application(
+    _ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    let dic = ["error": error.localizedDescription]
+    invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
+    PushLogD("####### ===> APNs register failed, %@", error.localizedDescription)
+  }
+
+  public func application(
+    _ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) -> Bool {
+    /// TODO: 此方法可能会触发两次
+
+    PushLogD("onNotification, userInfo = [%@]", userInfo)
+    NSLog("###### onNotification  userInfo = [%@]", userInfo)
+
+    CloudPushSDK.sendNotificationAck(userInfo)
+
+    invokeFlutterMethodOnMainThread(method: "onNotification", arguments: userInfo)
+
+    if let remoteNotification = self.remoteNotification {
+      if let msgId = userInfo["m"] as? String, let remoteMsgId = remoteNotification["m"] as? String,
+        msgId == remoteMsgId
+      {
+        CloudPushSDK.sendNotificationAck(remoteNotification)
+        NSLog("###### onNotificationOpened  argument = [%@]", remoteNotification)
+        invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: remoteNotification)
+        self.remoteNotification = nil
+      }
+    }
+
+    completionHandler(.newData)
+
+    return true
+  }
+
+  func isNetworkReachable() -> Bool {
+    return AlicloudReachabilityManager.shareInstance().checkInternetConnection()
+  }
+
+  func registerAPNs() {
+    let center = UNUserNotificationCenter.current()
+    center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+      if granted {
+        DispatchQueue.main.async {
+          UIApplication.shared.registerForRemoteNotifications()
+        }
+      }
+    }
+  }
+
+  func initPushSdk(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    guard let arguments = call.arguments as? [String: Any],
+      let appKey = arguments["appKey"] as? String,
+      let appSecret = arguments["appSecret"] as? String
+    else {
+      result([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "appKey or appSecret config error"])
+      return
+    }
+
+    CloudPushSDK.turnOnDebug()
+
+    guard !appKey.isEmpty, !appSecret.isEmpty else {
+      result([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "appKey or appSecret config error"])
+      return
+    }
+
+    guard isNetworkReachable() else {
+      result([KEY_CODE: CODE_NO_NET, KEY_ERROR_MSG: "no network"])
+      return
+    }
+
+    registerAPNs()
+
+    CloudPushSDK.asyncInit(appKey, appSecret: appSecret) { res in
+      if let res = res, res.success {
+        PushLogD("Push SDK init success, deviceId: %@.", CloudPushSDK.getDeviceId() ?? "")
+        result([KEY_CODE: CODE_SUCCESS])
+      } else {
+        PushLogD(
+          "###### Push SDK init failed, error: %@", (res?.error as NSError?)?.description ?? "")
+        NSLog(
+          "=======> Push SDK init failed, error: %@", (res?.error as NSError?)?.description ?? "")
+        result([KEY_CODE: CODE_FAILED, KEY_ERROR_MSG: (res?.error as NSError?)?.description ?? ""])
+      }
+    }
+
+    listenerOnChannelOpened()
+    registerMessageReceive()
+  }
+
+  // 添加这个辅助方法来确保在主线程上调用Flutter方法
+  private func invokeFlutterMethodOnMainThread(method: String, arguments: Any?) {
+    DispatchQueue.main.async {
+      self.channel?.invokeMethod(method, arguments: arguments)
+    }
+  }
+
+  private func listenerOnChannelOpened() {
+    NotificationCenter.default.addObserver(
+      self, selector: #selector(onChannelOpened(_:)),
+      name: NSNotification.Name(rawValue: "CCPDidChannelConnectedSuccess"), object: nil)
+  }
+
+  @objc private func onChannelOpened(_ notification: Notification) {
+    invokeFlutterMethodOnMainThread(method: "onChannelOpened", arguments: [:])
+  }
+
+  private func registerMessageReceive() {
+    NotificationCenter.default.addObserver(
+      self, selector: #selector(onMessageReceived(_:)),
+      name: NSNotification.Name(rawValue: "CCPDidReceiveMessageNotification"), object: nil)
+  }
+
+  @objc private func onMessageReceived(_ notification: Notification) {
+    guard let message = notification.object as? CCPSysMessage else { return }
+    let dic: [String: Any] = [
+      "title": message.title ?? "",
+      "body": message.body ?? "",
+    ]
+    invokeFlutterMethodOnMainThread(method: "onMessage", arguments: dic)
+  }
+
   /// 设置角标数
   func setBadgeNum(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
@@ -303,96 +446,6 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 }
 
-// init push sdk
-extension AliyunPushPlugin {
-  func isNetworkReachable() -> Bool {
-    return AlicloudReachabilityManager.shareInstance().checkInternetConnection()
-  }
-
-  func registerAPNs() {
-    let center = UNUserNotificationCenter.current()
-    center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-      if granted {
-        DispatchQueue.main.async {
-          UIApplication.shared.registerForRemoteNotifications()
-        }
-      }
-    }
-  }
-
-  func initPushSdk(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    guard let arguments = call.arguments as? [String: Any],
-      let appKey = arguments["appKey"] as? String,
-      let appSecret = arguments["appSecret"] as? String
-    else {
-      result([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "appKey or appSecret config error"])
-      return
-    }
-
-    CloudPushSDK.turnOnDebug()
-
-    guard !appKey.isEmpty, !appSecret.isEmpty else {
-      result([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "appKey or appSecret config error"])
-      return
-    }
-
-    guard isNetworkReachable() else {
-      result([KEY_CODE: CODE_NO_NET, KEY_ERROR_MSG: "no network"])
-      return
-    }
-
-    registerAPNs()
-
-    CloudPushSDK.asyncInit(appKey, appSecret: appSecret) { res in
-      if let res = res, res.success {
-        PushLogD("Push SDK init success, deviceId: %@.", CloudPushSDK.getDeviceId() ?? "")
-        result([KEY_CODE: CODE_SUCCESS])
-      } else {
-        PushLogD(
-          "###### Push SDK init failed, error: %@", (res?.error as NSError?)?.description ?? "")
-        NSLog(
-          "=======> Push SDK init failed, error: %@", (res?.error as NSError?)?.description ?? "")
-        result([KEY_CODE: CODE_FAILED, KEY_ERROR_MSG: (res?.error as NSError?)?.description ?? ""])
-      }
-    }
-
-    listenerOnChannelOpened()
-    registerMessageReceive()
-  }
-
-  // 添加这个辅助方法来确保在主线程上调用Flutter方法
-  private func invokeFlutterMethodOnMainThread(method: String, arguments: Any?) {
-    DispatchQueue.main.async {
-      self.channel?.invokeMethod(method, arguments: arguments)
-    }
-  }
-
-  private func listenerOnChannelOpened() {
-    NotificationCenter.default.addObserver(
-      self, selector: #selector(onChannelOpened(_:)),
-      name: NSNotification.Name(rawValue: "CCPDidChannelConnectedSuccess"), object: nil)
-  }
-
-  @objc private func onChannelOpened(_ notification: Notification) {
-    invokeFlutterMethodOnMainThread(method: "onChannelOpened", arguments: [:])
-  }
-
-  private func registerMessageReceive() {
-    NotificationCenter.default.addObserver(
-      self, selector: #selector(onMessageReceived(_:)),
-      name: NSNotification.Name(rawValue: "CCPDidReceiveMessageNotification"), object: nil)
-  }
-
-  @objc private func onMessageReceived(_ notification: Notification) {
-    guard let message = notification.object as? CCPSysMessage else { return }
-    let dic: [String: Any] = [
-      "title": message.title ?? "",
-      "body": message.body ?? "",
-    ]
-    invokeFlutterMethodOnMainThread(method: "onMessage", arguments: dic)
-  }
-}
-
 extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
   func handleIOS10Notification(_ notification: UNNotification) {
     let userInfo = notification.request.content.userInfo
@@ -452,62 +505,6 @@ extension AliyunPushPlugin {
     {
       self.remoteNotification = remoteNotification
     }
-    return true
-  }
-
-  public func application(
-    _ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
-  ) {
-    CloudPushSDK.registerDevice(deviceToken) { res in
-      if let res = res, res.success {
-        PushLogD(
-          "Register deviceToken successfully, deviceToken: %@", CloudPushSDK.getApnsDeviceToken())
-        let dic = ["apnsDeviceToken": CloudPushSDK.getApnsDeviceToken()]
-        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenSuccess", arguments: dic)
-      } else {
-        PushLogD(
-          "Register deviceToken failed, error: %@", (res?.error as NSError?)?.description ?? "")
-        let dic = ["error": (res?.error as NSError?)?.description ?? ""]
-        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
-      }
-    }
-    PushLogD("####### ===> APNs register success")
-  }
-
-  public func application(
-    _ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error
-  ) {
-    let dic = ["error": error.localizedDescription]
-    invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
-    PushLogD("####### ===> APNs register failed, %@", error.localizedDescription)
-  }
-
-  public func application(
-    _ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
-    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
-  ) -> Bool {
-    /// TODO: 此方法可能会触发两次
-
-    PushLogD("onNotification, userInfo = [%@]", userInfo)
-    NSLog("###### onNotification  userInfo = [%@]", userInfo)
-
-    CloudPushSDK.sendNotificationAck(userInfo)
-
-    invokeFlutterMethodOnMainThread(method: "onNotification", arguments: userInfo)
-
-    if let remoteNotification = self.remoteNotification {
-      if let msgId = userInfo["m"] as? String, let remoteMsgId = remoteNotification["m"] as? String,
-        msgId == remoteMsgId
-      {
-        CloudPushSDK.sendNotificationAck(remoteNotification)
-        NSLog("###### onNotificationOpened  argument = [%@]", remoteNotification)
-        invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: remoteNotification)
-        self.remoteNotification = nil
-      }
-    }
-
-    completionHandler(.newData)
-
     return true
   }
 }
