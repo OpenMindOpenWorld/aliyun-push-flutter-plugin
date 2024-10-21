@@ -11,24 +11,15 @@ let CODE_PARAMS_ILLEGAL = "10001"
 let CODE_FAILED = "10002"
 let CODE_NO_NET = "10003"
 
-func PushLogD(_ format: String, _ args: CVarArg...) {
-  if AliyunPushLog.isLogEnabled() {
-    NSLog("[CloudPush Debug]: \(String(format: format, arguments: args))")
-  }
-}
+// MARK: - AliyunPushPlugin
 
-func PushLogE(_ format: String, _ args: CVarArg...) {
-  if AliyunPushLog.isLogEnabled() {
-    NSLog("[CloudPush Error]: \(String(format: format, arguments: args))")
-  }
-}
+public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenterDelegate {
+  private var channel: FlutterMethodChannel?
+  private var notificationCenter: UNUserNotificationCenter?
+  private var showNoticeWhenForeground: Bool = false
+  private var deviceToken: Data?
 
-public class AliyunPushPlugin: NSObject, FlutterPlugin {
-  var channel: FlutterMethodChannel?
-  var notificationCenter: UNUserNotificationCenter?
-  var showNoticeWhenForeground: Bool = false
-  var deviceToken: Data?
-  var remoteNotification: [AnyHashable: Any]?
+  // MARK: - FlutterPlugin
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "aliyun_push", binaryMessenger: registrar.messenger())
@@ -37,6 +28,35 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
     registrar.addApplicationDelegate(instance)
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
+
+  public func application(
+    _ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    CloudPushSDK.registerDevice(deviceToken) { res in
+      if let res = res, res.success {
+        AliyunPushLog.d(
+          "Register deviceToken successfully, deviceToken: %@", CloudPushSDK.getApnsDeviceToken())
+        let dic = ["apnsDeviceToken": CloudPushSDK.getApnsDeviceToken()]
+        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenSuccess", arguments: dic)
+      } else {
+        AliyunPushLog.d(
+          "Register deviceToken failed, error: %@", (res?.error as NSError?)?.description ?? "")
+        let dic = ["error": (res?.error as NSError?)?.description ?? ""]
+        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
+      }
+    }
+    AliyunPushLog.d("####### ===> APNs register success")
+  }
+
+  public func application(
+    _ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    let dic = ["error": error.localizedDescription]
+    invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
+    AliyunPushLog.d("####### ===> APNs register failed, %@", error.localizedDescription)
+  }
+
+  // MARK: - Method Handler
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
@@ -67,7 +87,9 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
     case "setBadgeNum":
       setBadgeNum(call, result: result)
     case "syncBadgeNum":
-      if let arguments = call.arguments as? [String: Any], let badgeNum = arguments["badgeNum"] as? Int {
+      if let arguments = call.arguments as? [String: Any],
+        let badgeNum = arguments["badgeNum"] as? Int
+      {
         syncBadgeNum(badgeNum, result: result)
       }
     case "getApnsDeviceToken":
@@ -81,69 +103,14 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  public func application(
-    _ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
-  ) {
-    CloudPushSDK.registerDevice(deviceToken) { res in
-      if let res = res, res.success {
-        PushLogD(
-          "Register deviceToken successfully, deviceToken: %@", CloudPushSDK.getApnsDeviceToken())
-        let dic = ["apnsDeviceToken": CloudPushSDK.getApnsDeviceToken()]
-        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenSuccess", arguments: dic)
-      } else {
-        PushLogD(
-          "Register deviceToken failed, error: %@", (res?.error as NSError?)?.description ?? "")
-        let dic = ["error": (res?.error as NSError?)?.description ?? ""]
-        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
-      }
-    }
-    PushLogD("####### ===> APNs register success")
-  }
-
-  public func application(
-    _ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error
-  ) {
-    let dic = ["error": error.localizedDescription]
-    invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
-    PushLogD("####### ===> APNs register failed, %@", error.localizedDescription)
-  }
-
-  public func application(
-    _ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
-    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
-  ) -> Bool {
-    /// TODO: 此方法可能会触发两次
-
-    PushLogD("onNotification, userInfo = [%@]", userInfo)
-    NSLog("###### onNotification  userInfo = [%@]", userInfo)
-
-    CloudPushSDK.sendNotificationAck(userInfo)
-
-    invokeFlutterMethodOnMainThread(method: "onNotification", arguments: userInfo)
-
-    if let remoteNotification = self.remoteNotification {
-      if let msgId = userInfo["m"] as? String, let remoteMsgId = remoteNotification["m"] as? String,
-        msgId == remoteMsgId
-      {
-        CloudPushSDK.sendNotificationAck(remoteNotification)
-        NSLog("###### onNotificationOpened  argument = [%@]", remoteNotification)
-        invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: remoteNotification)
-        self.remoteNotification = nil
-      }
-    }
-
-    completionHandler(.newData)
-
-    return true
-  }
-
-  func isNetworkReachable() -> Bool {
+  private func isNetworkReachable() -> Bool {
     return AlicloudReachabilityManager.shareInstance().checkInternetConnection()
   }
 
-  func registerAPNs() {
-    let center = UNUserNotificationCenter.current()
-    center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+  private func registerAPNs() {
+    notificationCenter = UNUserNotificationCenter.current()
+    notificationCenter?.delegate = self
+    notificationCenter?.requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
       if granted {
         DispatchQueue.main.async {
           UIApplication.shared.registerForRemoteNotifications()
@@ -152,7 +119,9 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  func initPushSdk(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  // MARK: - Push SDK Methods
+
+  private func initPushSdk(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
       let appKey = arguments["appKey"] as? String,
       let appSecret = arguments["appSecret"] as? String
@@ -177,10 +146,10 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
 
     CloudPushSDK.asyncInit(appKey, appSecret: appSecret) { res in
       if let res = res, res.success {
-        PushLogD("Push SDK init success, deviceId: %@.", CloudPushSDK.getDeviceId() ?? "")
+        AliyunPushLog.d("Push SDK init success, deviceId: %@.", CloudPushSDK.getDeviceId() ?? "")
         result([KEY_CODE: CODE_SUCCESS])
       } else {
-        PushLogD(
+        AliyunPushLog.d(
           "###### Push SDK init failed, error: %@", (res?.error as NSError?)?.description ?? "")
         NSLog(
           "=======> Push SDK init failed, error: %@", (res?.error as NSError?)?.description ?? "")
@@ -225,7 +194,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 设置角标数
-  func setBadgeNum(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func setBadgeNum(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
       let badgeNum = arguments["badgeNum"] as? Int
     else {
@@ -246,13 +215,13 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 同步角标数
-  func syncBadgeNum(_ badgeNum: Int, result: FlutterResult?) {
+  private func syncBadgeNum(_ badgeNum: Int, result: FlutterResult?) {
     CloudPushSDK.syncBadgeNum(UInt(badgeNum)) { res in
       if let res = res, res.success {
-        PushLogD("Sync badge num: [%d] success.", badgeNum)
+        AliyunPushLog.d("Sync badge num: [%d] success.", badgeNum)
         result?([KEY_CODE: CODE_SUCCESS])
       } else {
-        PushLogD(
+        AliyunPushLog.d(
           "Sync badge num: [%d] failed, error: %@", badgeNum,
           (res?.error as NSError?)?.description ?? "")
         result?([KEY_CODE: CODE_FAILED, KEY_ERROR_MSG: (res?.error as NSError?)?.description ?? ""])
@@ -261,18 +230,19 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 获取设备Id
-  func getDeviceId(result: @escaping FlutterResult) {
+  private func getDeviceId(result: @escaping FlutterResult) {
     result(CloudPushSDK.getDeviceId() ?? "")
   }
 
   /// 打开推送SDK的日志
-  func turnOnDebug(result: @escaping FlutterResult) {
+  private func turnOnDebug(result: @escaping FlutterResult) {
     CloudPushSDK.turnOnDebug()
     result([KEY_CODE: CODE_SUCCESS])
   }
 
   /// App处于前台时显示通知
-  func showNoticeWhenForeground(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func showNoticeWhenForeground(_ call: FlutterMethodCall, result: @escaping FlutterResult)
+  {
     guard let arguments = call.arguments as? [String: Any],
       let enable = arguments["enable"] as? Bool
     else {
@@ -284,12 +254,12 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 获取APNs Token
-  func getApnsDeviceToken(result: @escaping FlutterResult) {
+  private func getApnsDeviceToken(result: @escaping FlutterResult) {
     result(CloudPushSDK.getApnsDeviceToken())
   }
 
   /// 绑定账号
-  func bindAccount(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func bindAccount(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
       let account = arguments["account"] as? String
     else {
@@ -307,7 +277,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 解绑账号
-  func unbindAccount(result: @escaping FlutterResult) {
+  private func unbindAccount(result: @escaping FlutterResult) {
     CloudPushSDK.unbindAccount { res in
       if let res = res, res.success {
         result([KEY_CODE: CODE_SUCCESS])
@@ -318,7 +288,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 添加别名
-  func addAlias(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func addAlias(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
       let alias = arguments["alias"] as? String
     else {
@@ -336,7 +306,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 移除别名
-  func removeAlias(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func removeAlias(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
       let alias = arguments["alias"] as? String
     else {
@@ -354,7 +324,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 查询别名
-  func listAlias(result: @escaping FlutterResult) {
+  private func listAlias(result: @escaping FlutterResult) {
     CloudPushSDK.listAliases { res in
       if let res = res, res.success {
         result([KEY_CODE: CODE_SUCCESS, "aliasList": res.data ?? []])
@@ -365,7 +335,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 添加标签
-  func bindTag(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func bindTag(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
       let tags = arguments["tags"] as? [String],
       !tags.isEmpty
@@ -381,14 +351,14 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
       if let res = res, res.success {
         result([KEY_CODE: CODE_SUCCESS])
       } else {
-        PushLogD("#### ===> %@", (res?.error as NSError?)?.description ?? "")
+        AliyunPushLog.d("#### ===> %@", (res?.error as NSError?)?.description ?? "")
         result([KEY_CODE: CODE_FAILED, KEY_ERROR_MSG: (res?.error as NSError?)?.description ?? ""])
       }
     }
   }
 
   /// 移除标签
-  func unbindTag(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func unbindTag(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any],
       let tags = arguments["tags"] as? [String],
       !tags.isEmpty
@@ -410,7 +380,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 查询标签列表
-  func listTags(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func listTags(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let arguments = call.arguments as? [String: Any] else {
       result([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "Invalid arguments"])
       return
@@ -428,7 +398,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 设置是否开启插件日志
-  func setPluginLogEnabled(_ call: FlutterMethodCall) {
+  private func setPluginLogEnabled(_ call: FlutterMethodCall) {
     if let arguments = call.arguments as? [String: Any],
       let enabled = arguments["enabled"] as? Bool
     {
@@ -441,13 +411,11 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin {
   }
 
   /// 通知通道是否已打开
-  func isChannelOpened(result: @escaping FlutterResult) {
+  private func isChannelOpened(result: @escaping FlutterResult) {
     result(CloudPushSDK.isChannelOpened())
   }
-}
 
-extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
-  func handleIOS10Notification(_ notification: UNNotification) {
+  private func handleIOS10Notification(_ notification: UNNotification) {
     let userInfo = notification.request.content.userInfo
 
     // 通知角标数清0
@@ -490,21 +458,5 @@ extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
     }
 
     completionHandler()
-  }
-}
-
-extension AliyunPushPlugin {
-  public func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
-  ) -> Bool {
-    NSLog("###### didFinishLaunchingWithOptions launchOptions \(String(describing: launchOptions))")
-    if let options = launchOptions,
-      let remoteNotification = options[UIApplication.LaunchOptionsKey.remoteNotification]
-        as? [AnyHashable: Any]
-    {
-      self.remoteNotification = remoteNotification
-    }
-    return true
   }
 }
