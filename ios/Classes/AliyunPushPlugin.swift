@@ -360,6 +360,13 @@ extension AliyunPushPlugin {
     registerMessageReceive()
   }
 
+  // 添加这个辅助方法来确保在主线程上调用Flutter方法
+  private func invokeFlutterMethodOnMainThread(method: String, arguments: Any?) {
+    DispatchQueue.main.async {
+      self.channel?.invokeMethod(method, arguments: arguments)
+    }
+  }
+
   private func listenerOnChannelOpened() {
     NotificationCenter.default.addObserver(
       self, selector: #selector(onChannelOpened(_:)),
@@ -367,7 +374,7 @@ extension AliyunPushPlugin {
   }
 
   @objc private func onChannelOpened(_ notification: Notification) {
-    self.channel?.invokeMethod("onChannelOpened", arguments: [:])
+    invokeFlutterMethodOnMainThread(method: "onChannelOpened", arguments: [:])
   }
 
   private func registerMessageReceive() {
@@ -382,15 +389,13 @@ extension AliyunPushPlugin {
       "title": message.title ?? "",
       "body": message.body ?? "",
     ]
-    self.channel?.invokeMethod("onMessage", arguments: dic)
+    invokeFlutterMethodOnMainThread(method: "onMessage", arguments: dic)
   }
 }
 
 extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
   func handleIOS10Notification(_ notification: UNNotification) {
-    let request = notification.request
-    let content = request.content
-    let userInfo = content.userInfo
+    let userInfo = notification.request.content.userInfo
 
     // 通知角标数清0
     UIApplication.shared.applicationIconBadgeNumber = 0
@@ -399,7 +404,7 @@ extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
 
     // 通知打开回执上报
     CloudPushSDK.sendNotificationAck(userInfo)
-    channel?.invokeMethod("onNotification", arguments: userInfo)
+    invokeFlutterMethodOnMainThread(method: "onNotification", arguments: userInfo)
   }
 
   public func userNotificationCenter(
@@ -421,15 +426,14 @@ extension AliyunPushPlugin: UNUserNotificationCenterDelegate {
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
     let userAction = response.actionIdentifier
+    let userInfo = response.notification.request.content.userInfo
     if userAction == UNNotificationDefaultActionIdentifier {
-      CloudPushSDK.sendNotificationAck(response.notification.request.content.userInfo)
-      channel?.invokeMethod(
-        "onNotificationOpened", arguments: response.notification.request.content.userInfo)
+      CloudPushSDK.sendNotificationAck(userInfo)
+      invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: userInfo)
     }
     if userAction == UNNotificationDismissActionIdentifier {
-      CloudPushSDK.sendDeleteNotificationAck(response.notification.request.content.userInfo)
-      channel?.invokeMethod(
-        "onNotificationRemoved", arguments: response.notification.request.content.userInfo)
+      CloudPushSDK.sendDeleteNotificationAck(userInfo)
+      invokeFlutterMethodOnMainThread(method: "onNotificationRemoved", arguments: userInfo)
     }
 
     completionHandler()
@@ -459,12 +463,12 @@ extension AliyunPushPlugin {
         PushLogD(
           "Register deviceToken successfully, deviceToken: %@", CloudPushSDK.getApnsDeviceToken())
         let dic = ["apnsDeviceToken": CloudPushSDK.getApnsDeviceToken()]
-        self.channel?.invokeMethod("onRegisterDeviceTokenSuccess", arguments: dic)
+        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenSuccess", arguments: dic)
       } else {
         PushLogD(
           "Register deviceToken failed, error: %@", (res?.error as NSError?)?.description ?? "")
         let dic = ["error": (res?.error as NSError?)?.description ?? ""]
-        self.channel?.invokeMethod("onRegisterDeviceTokenFailed", arguments: dic)
+        self.invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
       }
     }
     PushLogD("####### ===> APNs register success")
@@ -474,7 +478,7 @@ extension AliyunPushPlugin {
     _ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error
   ) {
     let dic = ["error": error.localizedDescription]
-    self.channel?.invokeMethod("onRegisterDeviceTokenFailed", arguments: dic)
+    invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
     PushLogD("####### ===> APNs register failed, %@", error.localizedDescription)
   }
 
@@ -489,7 +493,7 @@ extension AliyunPushPlugin {
 
     CloudPushSDK.sendNotificationAck(userInfo)
 
-    channel?.invokeMethod("onNotification", arguments: userInfo)
+    invokeFlutterMethodOnMainThread(method: "onNotification", arguments: userInfo)
 
     if let remoteNotification = self.remoteNotification {
       if let msgId = userInfo["m"] as? String, let remoteMsgId = remoteNotification["m"] as? String,
@@ -497,7 +501,7 @@ extension AliyunPushPlugin {
       {
         CloudPushSDK.sendNotificationAck(remoteNotification)
         NSLog("###### onNotificationOpened  argument = [%@]", remoteNotification)
-        channel?.invokeMethod("onNotificationOpened", arguments: remoteNotification)
+        invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: remoteNotification)
         self.remoteNotification = nil
       }
     }
