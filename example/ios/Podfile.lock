@@ -1,12 +1,7 @@
 PODS:
-  - AlicloudPush (2.1.0):
-    - AlicloudUTDID
-    - AlicloudUtils
-  - AlicloudUTDID (1.6.1)
-  - AlicloudUtils (2.0.1):
-    - AlicloudUTDID
+  - AlicloudPush (2.2.0)
   - aliyun_push_flutter (0.0.1):
-    - AlicloudPush
+    - AlicloudPush (= 2.2.0)
     - Flutter
   - Flutter (1.0.0)
   - integration_test (0.0.1):
@@ -20,8 +15,6 @@ DEPENDENCIES:
 SPEC REPOS:
   https://github.com/aliyun/aliyun-specs.git:
     - AlicloudPush
-    - AlicloudUTDID
-    - AlicloudUtils
 
 EXTERNAL SOURCES:
   aliyun_push_flutter:
@@ -32,13 +25,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  AlicloudPush: 653294c5bd7362b0b71e2b89ca8cd28a5334749a
-  AlicloudUTDID: 5d2f22d50e11eecd38f30bc7a48c71925ea90976
-  AlicloudUtils: ef4436f52b828b1182b002373758ecb88068e679
-  aliyun_push_flutter: 5b33b46510e6f1b7cb487eb5e0d1fa5df62cb574
+  AlicloudPush: 74a9ac0ec7d9e1396283dfa71c40c895b273905e
+  aliyun_push_flutter: c59dd925ce1d92d71133698bf3f6cb0dd73388c3
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
 
 PODFILE CHECKSUM: 7e12abdb2b7e20633f470f68b57681df76aa752a
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
