@@ -1,4 +1,4 @@
-## 1.2.1
+## 1.2.2
 
 - Android SDK 升级至 3.9.2
 - 修复 iOS SDK 2.2.0 移除 AlicloudUtils 导致不能安装问题
