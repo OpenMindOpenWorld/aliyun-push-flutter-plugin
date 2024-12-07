@@ -70,6 +70,19 @@ class _IOSPageState extends BaseState<IOSPage> {
       child: const Text('通知通道是否已打开'),
     ));
 
+    children.add(FilledButton(
+      onPressed: () async {
+        var result = await _aliyunPush.closeCCPChannel();
+        var code = result['code'];
+        if (code == kAliyunPushSuccessCode) {
+          showOkDialog('关闭推送消息通道成功');
+        } else {
+          showErrorDialog('关闭推送消息通道失败');
+        }
+      },
+      child: const Text('关闭推送消息通道'),
+    ));
+
     return cardBuilder(Column(children: children));
   }
 
