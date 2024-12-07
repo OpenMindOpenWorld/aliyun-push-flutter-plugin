@@ -208,6 +208,11 @@ abstract class AliyunPushFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('isIOSChannelOpened() has not been implemented.');
   }
 
+  /// iOS 关闭推送消息通道
+  Future<Map<dynamic, dynamic>> closeCCPChannel() async {
+    throw UnimplementedError('closeCCPChannel() has not been implemented.');
+  }
+
   /// 设置是否开启插件日志
   void setPluginLogEnabled(bool enabled) {
     throw UnimplementedError('setPluginLogEnabled() has not been implemented.');

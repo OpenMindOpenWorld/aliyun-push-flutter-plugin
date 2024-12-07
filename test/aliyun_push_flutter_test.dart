@@ -118,6 +118,12 @@ class MockAliyunPushFlutterPlatform
   }
 
   @override
+  Future<Map> closeCCPChannel() {
+    // TODO: implement closeCCPChannel
+    throw UnimplementedError();
+  }
+
+  @override
   void jumpToAndroidNotificationSettings({String? id}) {
     // TODO: implement jumpToAndroidNotificationSettings
   }

@@ -169,9 +169,14 @@ class AliyunPushFlutter {
         .isAndroidNotificationEnabled(id: id);
   }
 
-  /// 通知通道是否已打开
+  /// iOS 通知通道是否已打开
   Future<bool> isIOSChannelOpened() async {
     return AliyunPushFlutterPlatform.instance.isIOSChannelOpened();
+  }
+
+  /// iOS 关闭推送消息通道
+  Future<Map<dynamic, dynamic>> closeCCPChannel() async {
+    return AliyunPushFlutterPlatform.instance.closeCCPChannel();
   }
 
   /// 跳转到通知设置页面
