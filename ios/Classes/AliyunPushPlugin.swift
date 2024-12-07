@@ -1,4 +1,3 @@
-import AlicloudUtils
 import CloudPushSDK
 import Flutter
 import UserNotifications
@@ -96,15 +95,13 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
       getApnsDeviceToken(result: result)
     case "isChannelOpened":
       isChannelOpened(result: result)
+    case "closeCCPChannel":
+      closeCCPChannel(result: result)
     case "setPluginLogEnabled":
       setPluginLogEnabled(call)
     default:
       result(FlutterMethodNotImplemented)
     }
-  }
-
-  private func isNetworkReachable() -> Bool {
-    return AlicloudReachabilityManager.shareInstance().checkInternetConnection()
   }
 
   private func registerAPNs() {
@@ -134,11 +131,6 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
 
     guard !appKey.isEmpty, !appSecret.isEmpty else {
       result([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "appKey or appSecret config error"])
-      return
-    }
-
-    guard isNetworkReachable() else {
-      result([KEY_CODE: CODE_NO_NET, KEY_ERROR_MSG: "no network"])
       return
     }
 
@@ -253,7 +245,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     result([KEY_CODE: CODE_SUCCESS])
   }
 
-  /// 获取APNs Token
+  /// 获取 APNs Token
   private func getApnsDeviceToken(result: @escaping FlutterResult) {
     result(CloudPushSDK.getApnsDeviceToken())
   }
@@ -410,9 +402,15 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     }
   }
 
-  /// 通知通道是否已打开
+  /// 推送消息通道状态
   private func isChannelOpened(result: @escaping FlutterResult) {
     result(CloudPushSDK.isChannelOpened())
+  }
+
+  /// 关闭推送消息通道
+  private func closeCCPChannel(result: @escaping FlutterResult) {
+    CloudPushSDK.closeCCPChannel()
+    result([KEY_CODE: CODE_SUCCESS])
   }
 
   private func handleIOS10Notification(_ notification: UNNotification) {
