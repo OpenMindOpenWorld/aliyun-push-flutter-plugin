@@ -14,6 +14,20 @@
 
 ## 新增 APIs
 
+### iOS 关闭推送消息通道
+`Future<Map<dynamic, dynamic>> closeCCPChannel()`
+
+返回值：
+
+`Map<dynamic, dynamic>`
+
+map 中包含两个 key 值:
+
+- `code`: 错误码
+- `errorMsg`: 错误信息
+
+***
+
 ### Android 查询推送通道状态
 
 
