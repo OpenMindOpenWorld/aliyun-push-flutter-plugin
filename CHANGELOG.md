@@ -1,3 +1,7 @@
+## 1.2.3
+
+- 新增iOS关闭推送消息通道(closeCCPChannel)
+
 ## 1.2.2
 
 - Android SDK 升级至 3.9.2
