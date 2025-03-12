@@ -8,6 +8,7 @@ import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
@@ -122,7 +123,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         PushServiceFactory.init(mContext)
 
         val pushService = PushServiceFactory.getCloudPushService()
-        pushService.setLogLevel(CloudPushService.LOG_DEBUG)
+        pushService.setLogLevel(if (mContext.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE > 0) CloudPushService.LOG_DEBUG else CloudPushService.LOG_INFO)
         pushService.register(mContext, object : CommonCallback {
             override fun onSuccess(response: String?) {
                 val map = HashMap<String, String>()
