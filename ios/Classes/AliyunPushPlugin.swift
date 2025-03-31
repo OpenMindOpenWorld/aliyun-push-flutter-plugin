@@ -428,24 +428,13 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     result([KEY_CODE: CODE_SUCCESS])
   }
 
-  private func handleNotification(_ notification: UNNotification) {
-    let userInfo = notification.request.content.userInfo
-
-    // 通知角标数清0
-    UIApplication.shared.applicationIconBadgeNumber = 0
-    // 同步角标数到服务端
-    syncBadgeNum(0, result: nil)
-
-    // 通知打开回执上报
-    CloudPushSDK.sendNotificationAck(userInfo)
-    invokeFlutterMethodOnMainThread(method: "onNotification", arguments: userInfo)
-  }
-
   public func userNotificationCenter(
     _ center: UNUserNotificationCenter, willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
-    handleNotification(notification)
+    let userInfo = notification.request.content.userInfo
+    CloudPushSDK.sendNotificationAck(userInfo)
+    invokeFlutterMethodOnMainThread(method: "onNotification", arguments: userInfo)
 
     if showNoticeWhenForeground {
       completionHandler([.sound, .alert, .badge])
@@ -462,11 +451,6 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     let userAction = response.actionIdentifier
 
     if userAction == UNNotificationDefaultActionIdentifier {
-      // 通知角标数清0
-      UIApplication.shared.applicationIconBadgeNumber = 0
-      // 同步角标数到服务端
-      syncBadgeNum(0, result: nil)
-
       CloudPushSDK.sendNotificationAck(userInfo)
       invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: userInfo)
     }
