@@ -175,6 +175,8 @@ class AliyunPushFlutter {
   }
 
   /// iOS 关闭推送消息通道
+  /// 此方法已废弃
+  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
   Future<Map<dynamic, dynamic>> closeCCPChannel() async {
     return AliyunPushFlutterPlatform.instance.closeCCPChannel();
   }
@@ -233,6 +235,7 @@ class AliyunPushFlutter {
   }
 
   /// 开启iOS Debug日志
+  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
   Future<Map<dynamic, dynamic>> turnOnIOSDebug() async {
     return AliyunPushFlutterPlatform.instance.turnOnIOSDebug();
   }

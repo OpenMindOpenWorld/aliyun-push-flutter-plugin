@@ -276,6 +276,7 @@ class MethodChannelAliyunPushFlutter extends AliyunPushFlutterPlatform {
     return opened;
   }
 
+  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
   @override
   Future<Map<dynamic, dynamic>> closeCCPChannel() async {
     if (!Platform.isIOS) {
@@ -396,6 +397,7 @@ class MethodChannelAliyunPushFlutter extends AliyunPushFlutterPlatform {
     return result;
   }
 
+  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
   @override
   Future<Map<dynamic, dynamic>> turnOnIOSDebug() async {
     if (!Platform.isIOS) {
