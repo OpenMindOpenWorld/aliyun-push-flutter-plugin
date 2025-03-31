@@ -16,7 +16,6 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
   private var channel: FlutterMethodChannel?
   private var notificationCenter: UNUserNotificationCenter?
   private var showNoticeWhenForeground: Bool = false
-  private var deviceToken: Data?
 
   // MARK: - FlutterPlugin
 
@@ -127,7 +126,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
       return
     }
 
-    CloudPushSDK.turnOnDebug()
+    // CloudPushSDK.turnOnDebug()
 
     guard !appKey.isEmpty, !appSecret.isEmpty else {
       result([KEY_CODE: CODE_PARAMS_ILLEGAL, KEY_ERROR_MSG: "appKey or appSecret config error"])
@@ -136,8 +135,8 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
 
     registerAPNs()
 
-    CloudPushSDK.asyncInit(appKey, appSecret: appSecret) { res in
-      if let res = res, res.success {
+    CloudPushSDK.start(withAppkey: appKey, appSecret: appSecret) { res in
+      if res.success {
         AliyunPushLog.d("Push SDK init success, deviceId: %@.", CloudPushSDK.getDeviceId() ?? "")
         result([KEY_CODE: CODE_SUCCESS])
       } else {
@@ -176,12 +175,26 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
       name: NSNotification.Name(rawValue: "CCPDidReceiveMessageNotification"), object: nil)
   }
 
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
   @objc private func onMessageReceived(_ notification: Notification) {
-    guard let message = notification.object as? CCPSysMessage else { return }
+    guard let data = notification.object as? [String: Any] else {
+      AliyunPushLog.d("Failed to parse message data: %@", notification.object ?? "nil")
+      return
+    }
+
+    let title = data["title"] as? String ?? ""
+    let content = data["content"] as? String ?? ""
+
     let dic: [String: Any] = [
-      "title": message.title ?? "",
-      "body": message.body ?? "",
+      "title": title,
+      "content": content,
+      // @available(*, deprecated, message: "Use 'content' instead")
+      "body": content,
     ]
+
     invokeFlutterMethodOnMainThread(method: "onMessage", arguments: dic)
   }
 
@@ -227,6 +240,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
   }
 
   /// 打开推送SDK的日志
+  // @available(*, deprecated, message: "deprecated")
   private func turnOnDebug(result: @escaping FlutterResult) {
     CloudPushSDK.turnOnDebug()
     result([KEY_CODE: CODE_SUCCESS])
@@ -408,6 +422,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
   }
 
   /// 关闭推送消息通道
+  // @available(*, deprecated, message: "deprecated")
   private func closeCCPChannel(result: @escaping FlutterResult) {
     CloudPushSDK.closeCCPChannel()
     result([KEY_CODE: CODE_SUCCESS])
