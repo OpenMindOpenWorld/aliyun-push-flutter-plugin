@@ -428,7 +428,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     result([KEY_CODE: CODE_SUCCESS])
   }
 
-  private func handleIOS10Notification(_ notification: UNNotification) {
+  private func handleNotification(_ notification: UNNotification) {
     let userInfo = notification.request.content.userInfo
 
     // 通知角标数清0
@@ -445,12 +445,11 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     _ center: UNUserNotificationCenter, willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
+    handleNotification(notification)
+
     if showNoticeWhenForeground {
-      // 通知弹出，且带有声音、内容和角标
       completionHandler([.sound, .alert, .badge])
     } else {
-      // 处理iOS 10通知，并上报通知打开回执
-      handleIOS10Notification(notification)
       completionHandler([])
     }
   }
@@ -459,12 +458,19 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
-    let userAction = response.actionIdentifier
     let userInfo = response.notification.request.content.userInfo
+    let userAction = response.actionIdentifier
+
     if userAction == UNNotificationDefaultActionIdentifier {
+      // 通知角标数清0
+      UIApplication.shared.applicationIconBadgeNumber = 0
+      // 同步角标数到服务端
+      syncBadgeNum(0, result: nil)
+
       CloudPushSDK.sendNotificationAck(userInfo)
       invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: userInfo)
     }
+
     if userAction == UNNotificationDismissActionIdentifier {
       CloudPushSDK.sendDeleteNotificationAck(userInfo)
       invokeFlutterMethodOnMainThread(method: "onNotificationRemoved", arguments: userInfo)
