@@ -1,6 +1,6 @@
 # 阿里云移动推送 Flutter 插件
 
-参考 [阿里云官方推送插件](https://pub.dev/packages/aliyun_push) 的重新开发版本，使用 Kotlin 和 Swift 分别编写 Android 和 iOS 平台的原生代码，支持最新的阿里云推送功能。
+阿里云移动推送 Flutter 插件，集成最新版本推送 SDK（Android `3.9.3` / iOS `3.0.0`），采用 Kotlin 和 Swift 分别实现 Android 和 iOS 平台功能。
 
 ## 特性
 
@@ -14,8 +14,10 @@
 
 ## 新增 APIs
 
-### iOS 关闭推送消息通道
-`Future<Map<dynamic, dynamic>> closeCCPChannel()`
+### ~~[已废弃]iOS 关闭推送消息通道~~
+~~`Future<Map<dynamic, dynamic>> closeCCPChannel()`~~
+
+> Aliyun iOS SDK 3.0.0 已经废弃了关闭推送消息通道的接口。
 
 返回值：
 
