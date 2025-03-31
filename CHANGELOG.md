@@ -1,3 +1,11 @@
+## 1.3.0
+
+- iOS SDK 升级至 3.0.0
+- 移除已废弃的 iOS API
+- 废弃 iOS 关闭推送消息通道(closeCCPChannel)
+- optimize: print debug logs in debug mode only #20
+- fix: handle both String and Int values in getAppMetaData #19
+
 ## 1.2.3
 
 - 新增iOS关闭推送消息通道(closeCCPChannel)
