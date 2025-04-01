@@ -228,8 +228,7 @@ class AliyunPushFlutter {
   }
 
   /// 开启iOS Debug日志
-  @Deprecated(
-      "This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
+  @Deprecated("This method is deprecated in the AlicloudPush iOS SDK.")
   Future<Map<dynamic, dynamic>> turnOnIOSDebug() async {
     return AliyunPushFlutterPlatform.instance.turnOnIOSDebug();
   }
