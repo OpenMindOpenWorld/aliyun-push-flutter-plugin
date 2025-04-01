@@ -1,6 +1,7 @@
-## 1.3.0
+## 1.3.1
 
 - iOS SDK 升级至 3.0.0
+- 支持 iPhone 模拟器推送
 - 移除已废弃的 iOS API
 - 废弃 iOS 关闭推送消息通道(closeCCPChannel)
 - optimize: print debug logs in debug mode only #20
@@ -8,7 +9,7 @@
 
 ## 1.2.3
 
-- 新增iOS关闭推送消息通道(closeCCPChannel)
+- 新增 iOS 关闭推送消息通道(closeCCPChannel)
 
 ## 1.2.2
 
