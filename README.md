@@ -15,6 +15,7 @@
 ## 新增 APIs
 
 ### ~~[已废弃]iOS 关闭推送消息通道~~
+
 ~~`Future<Map<dynamic, dynamic>> closeCCPChannel()`~~
 
 > Aliyun iOS SDK 3.0.0 已经废弃了关闭推送消息通道的接口。
@@ -28,10 +29,9 @@ map 中包含两个 key 值:
 - `code`: 错误码
 - `errorMsg`: 错误信息
 
-***
+---
 
 ### Android 查询推送通道状态
-
 
 `Future<Map<dynamic, dynamic>> checkAndroidPushChannelStatus()`
 
@@ -43,11 +43,12 @@ map 中包含三个 key 值:
 
 - `code`: 错误码
 - `errorMsg`: 错误信息
-- `status`: on表示推送通道打开，off表示推送通道关闭
+- `status`: on 表示推送通道打开，off 表示推送通道关闭
 
-***
+---
 
 ### Android 开启推送通道
+
 `Future<Map<dynamic, dynamic>> turnOnAndroidPushChannel()`
 
 返回值：
@@ -59,9 +60,10 @@ map 中包含两个 key 值:
 - `code`: 错误码
 - `errorMsg`: 错误信息
 
-***
+---
 
 ### Android 关闭推送通道
+
 `Future<Map<dynamic, dynamic>> turnOffAndroidPushChannel()`
 
 返回值：
@@ -72,7 +74,6 @@ map 中包含两个 key 值:
 
 - `code`: 错误码
 - `errorMsg`: 错误信息
-
 
 ---
 
@@ -172,7 +173,6 @@ AppKey 和 AppSecret 请务必写在`<application>`标签下，否则 SDK 会报
 
 > **注意：`android:exported=true` 必须配置**
 
-
 **4. 混淆配置**
 
 如果您的项目中使用 Proguard 等工具做了代码混淆，请保留以下配置：
@@ -230,6 +230,7 @@ AppKey 和 AppSecret 请务必写在`<application>`标签下，否则 SDK 会报
       <!-- oppo -->
       <meta-data android:name="com.oppo.push.key" android:value="" />
       <meta-data android:name="com.oppo.push.secret" android:value="" />
+
       <!-- 小米-->
       <meta-data android:name="com.xiaomi.push.id" android:value="" />
       <meta-data android:name="com.xiaomi.push.key" android:value="" />
@@ -390,17 +391,17 @@ void addMessageReceiver(
 
 参数:
 
-| 参数名                                   | 类型         | 是否必须 | 支持平台    | 功能                                                                                                                                                 |
-| ---------------------------------------- | ------------ | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| onNotification                           | PushCallback | 可选参数 | Android/iOS | 收到通知的回调                                                                                                                                       |
-| onMessage                                | PushCallback | 可选参数 | Android/iOS | 收到消息的回调                                                                                                                                       |
-| onNotificationOpened                     | PushCallback | 可选参数 | Android/iOS | 从通知栏打开通知的扩展处理                                                                                                                           |
-| onNotificationRemoved                    | PushCallback | 可选参数 | Android/iOS | 通知删除回调                                                                                                                                         |
-| onAndroidNotificationReceivedInApp       | PushCallback | 可选参数 | Android     | 应用处于前台时通知到达回调                                                                                                                           |
-| onAndroidNotificationClickedWithNoAction | PushCallback | 可选参数 | Android     | 无动作通知点击回调。当在后台或阿里云控制台指定的通知动作为无逻辑跳转时, 通知点击回调为 onNotificationClickedWithNoAction 而不是 onNotificationOpened |
-| onIOSChannelOpened                       | PushCallback | 可选参数 | iOS         | 通道 channel 打开的回调                                                                                                                              |
-| onIOSRegisterDeviceTokenSuccess          | PushCallback | 可选参数 | iOS         | 注册 APNs token 成功回调                                                                                                                             |
-| onIOSRegisterDeviceTokenFailed           | PushCallback | 可选参数 | iOS         | 注册 APNs token 失败回调                                                                                                                             |
+| 参数名                                   | 支持平台    | 功能                                                                                                                                                 |
+| ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| onNotification                           | Android/iOS | 收到通知的回调                                                                                                                                       |
+| onMessage                                | Android/iOS | 收到消息的回调                                                                                                                                       |
+| onNotificationOpened                     | Android/iOS | 从通知栏打开通知的扩展处理                                                                                                                           |
+| onNotificationRemoved                    | Android/iOS | 通知删除回调                                                                                                                                         |
+| onAndroidNotificationReceivedInApp       | Android     | 应用处于前台时通知到达回调                                                                                                                           |
+| onAndroidNotificationClickedWithNoAction | Android     | 无动作通知点击回调。当在后台或阿里云控制台指定的通知动作为无逻辑跳转时, 通知点击回调为 onNotificationClickedWithNoAction 而不是 onNotificationOpened |
+| onIOSChannelOpened                       | iOS         | 通道 channel 打开的回调                                                                                                                              |
+| onIOSRegisterDeviceTokenSuccess          | iOS         | 注册 APNs token 成功回调                                                                                                                             |
+| onIOSRegisterDeviceTokenFailed           | iOS         | 注册 APNs token 失败回调                                                                                                                             |
 
 代码示例：
 
@@ -1017,11 +1018,19 @@ bool isEnabled = await _aliyunPush.isAndroidNotificationEnabled(
 _aliyunPush.jumpToAndroidNotificationSettings();
 ```
 
-### turnOnIOSDebug
+### setIOSLogLevel
 
-`Future<Map<dynamic, dynamic>> turnOnIOSDebug() async`
+`Future<Map<dynamic, dynamic>> setIOSLogLevel(int level) async`
 
-打开 iOS 推送 SDK 的日志
+| Level | Int |
+| ----- | --- |
+| None  | 0   |
+| Error | 1   |
+| Warn  | 2   |
+| Info  | 3   |
+| Debug | 4   |
+
+设置 iOS 推送 SDK 输出日志的级别
 
 > **注意：只支持 iOS 平台**
 
@@ -1037,9 +1046,13 @@ map 中包含两个 key 值:
 代码示例：
 
 ```dart
-_aliyunPush.turnOnIOSDebug().then((result) {
+_aliyunPush.setIOSLogLevel(logLevel).then((result) {
     var code = result['code'];
     if (code == kAliyunPushSuccessCode) {
+
+    } else {
+        var errorCode = result['code'];
+        var errorMsg = result['errorMsg'];
     }
 });
 ```
