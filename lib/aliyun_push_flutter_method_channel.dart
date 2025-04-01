@@ -276,21 +276,6 @@ class MethodChannelAliyunPushFlutter extends AliyunPushFlutterPlatform {
     return opened;
   }
 
-  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
-  @override
-  Future<Map<dynamic, dynamic>> closeCCPChannel() async {
-    if (!Platform.isIOS) {
-      return {
-        'code': kAliyunPushOnlyIOS,
-        'errorMsg': 'Only support iOS',
-      };
-    }
-
-    Map<dynamic, dynamic> result =
-        await methodChannel.invokeMethod('closeCCPChannel');
-    return result;
-  }
-
   @override
   void jumpToAndroidNotificationSettings({String? id}) {
     if (!Platform.isAndroid) {
@@ -397,7 +382,7 @@ class MethodChannelAliyunPushFlutter extends AliyunPushFlutterPlatform {
     return result;
   }
 
-  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
+  @Deprecated("This method is deprecated in the AlicloudPush iOS SDK.")
   @override
   Future<Map<dynamic, dynamic>> turnOnIOSDebug() async {
     if (!Platform.isIOS) {
@@ -409,6 +394,20 @@ class MethodChannelAliyunPushFlutter extends AliyunPushFlutterPlatform {
 
     Map<dynamic, dynamic> result =
         await methodChannel.invokeMethod('turnOnDebug');
+    return result;
+  }
+
+  @override
+  Future<Map<dynamic, dynamic>> setIOSLogLevel(int level) async {
+    if (!Platform.isIOS) {
+      return {
+        'code': kAliyunPushOnlyIOS,
+        'errorMsg': 'Only support iOS',
+      };
+    }
+
+    Map<dynamic, dynamic> result =
+        await methodChannel.invokeMethod('setIOSLogLevel', {'level': level});
     return result;
   }
 

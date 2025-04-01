@@ -178,9 +178,14 @@ abstract class AliyunPushFlutterPlatform extends PlatformInterface {
   }
 
   /// 开启 iOS debug 日志
-  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
+  @Deprecated("This method is deprecated in the AlicloudPush iOS SDK.")
   Future<Map<dynamic, dynamic>> turnOnIOSDebug() async {
     throw UnimplementedError('turnOnIOSDebug() has not been implemented.');
+  }
+
+  /// 设置 iOS log 级别
+  Future<Map<dynamic, dynamic>> setIOSLogLevel(int level) async {
+    throw UnimplementedError('setIOSLogLevel() has not been implemented.');
   }
 
   /// App处于前台时显示通知
@@ -207,12 +212,6 @@ abstract class AliyunPushFlutterPlatform extends PlatformInterface {
   /// iOS 通知通道是否已打开
   Future<bool> isIOSChannelOpened() async {
     throw UnimplementedError('isIOSChannelOpened() has not been implemented.');
-  }
-
-  /// iOS 关闭推送消息通道
-  @Deprecated("This method is no longer recommended for use in the Aliyun iOS SDK and may be removed in future versions.")
-  Future<Map<dynamic, dynamic>> closeCCPChannel() async {
-    throw UnimplementedError('closeCCPChannel() has not been implemented.');
   }
 
   /// 设置是否开启插件日志
