@@ -118,12 +118,6 @@ class MockAliyunPushFlutterPlatform
   }
 
   @override
-  Future<Map> closeCCPChannel() {
-    // TODO: implement closeCCPChannel
-    throw UnimplementedError();
-  }
-
-  @override
   void jumpToAndroidNotificationSettings({String? id}) {
     // TODO: implement jumpToAndroidNotificationSettings
   }
@@ -221,6 +215,12 @@ class MockAliyunPushFlutterPlatform
   @override
   Future<Map> turnOnAndroidPushChannel() {
     // TODO: implement turnOnAndroidPushChannel
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map> setIOSLogLevel(int level) {
+    // TODO: implement setIOSLogLevel
     throw UnimplementedError();
   }
 }

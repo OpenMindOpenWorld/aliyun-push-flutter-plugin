@@ -174,11 +174,6 @@ class AliyunPushFlutter {
     return AliyunPushFlutterPlatform.instance.isIOSChannelOpened();
   }
 
-  /// iOS 关闭推送消息通道
-  Future<Map<dynamic, dynamic>> closeCCPChannel() async {
-    return AliyunPushFlutterPlatform.instance.closeCCPChannel();
-  }
-
   /// 跳转到通知设置页面
   void jumpToAndroidNotificationSettings({String? id}) {
     return AliyunPushFlutterPlatform.instance
@@ -233,8 +228,14 @@ class AliyunPushFlutter {
   }
 
   /// 开启iOS Debug日志
+  @Deprecated("This method is deprecated in the AlicloudPush iOS SDK.")
   Future<Map<dynamic, dynamic>> turnOnIOSDebug() async {
     return AliyunPushFlutterPlatform.instance.turnOnIOSDebug();
+  }
+
+  /// 设置 iOS log 的级别
+  Future<Map<dynamic, dynamic>> setIOSLogLevel(int level) async {
+    return AliyunPushFlutterPlatform.instance.setIOSLogLevel(level);
   }
 
   /// 解绑账号
