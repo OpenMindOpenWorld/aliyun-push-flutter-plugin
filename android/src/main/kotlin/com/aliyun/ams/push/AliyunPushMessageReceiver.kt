@@ -50,7 +50,7 @@ class AliyunPushMessageReceiver : MessageReceiver() {
             "extraMap" to extraMap
         )
         
-        AliyunPushPlugin.sInstance.callFlutterMethod("onNotification", arguments)
+        AliyunPushPlugin.sInstance?.callFlutterMethod("onNotification", arguments)
     }
 
     // 应用处于前台时通知到达回调
@@ -72,7 +72,7 @@ class AliyunPushMessageReceiver : MessageReceiver() {
             "openUrl" to openUrl
         )
 
-        AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationReceivedInApp", arguments)
+        AliyunPushPlugin.sInstance?.callFlutterMethod("onNotificationReceivedInApp", arguments)
     }
 
     // 推送消息的回调方法
@@ -85,7 +85,7 @@ class AliyunPushMessageReceiver : MessageReceiver() {
             "traceInfo" to cPushMessage.traceInfo
         )
 
-        AliyunPushPlugin.sInstance.callFlutterMethod("onMessage", arguments)
+        AliyunPushPlugin.sInstance?.callFlutterMethod("onMessage", arguments)
     }
 
     // 从通知栏打开通知的扩展处理
@@ -101,7 +101,7 @@ class AliyunPushMessageReceiver : MessageReceiver() {
             "extraMap" to extraMap
         )
 
-        AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationOpened", arguments)
+        AliyunPushPlugin.sInstance?.callFlutterMethod("onNotificationOpened", arguments)
     }
 
     // 通知删除回调
@@ -110,7 +110,7 @@ class AliyunPushMessageReceiver : MessageReceiver() {
             "msgId" to messageId
         )
 
-        AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationRemoved", arguments)
+        AliyunPushPlugin.sInstance?.callFlutterMethod("onNotificationRemoved", arguments)
     }
 
     // 无动作通知点击回调（当在后台或阿里云控制台指定的通知动作为无逻辑跳转时）
@@ -126,6 +126,6 @@ class AliyunPushMessageReceiver : MessageReceiver() {
             "extraMap" to extraMap
         )
 
-        AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationClickedWithNoAction", arguments)
+        AliyunPushPlugin.sInstance?.callFlutterMethod("onNotificationClickedWithNoAction", arguments)
     }
 }

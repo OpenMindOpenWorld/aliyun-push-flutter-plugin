@@ -43,7 +43,7 @@ class AliyunPushPlugin : FlutterPlugin, MethodCallHandler {
         private const val ERROR_MSG_KEY = "errorMsg"
 
         @SuppressLint("StaticFieldLeak")
-        lateinit var sInstance: AliyunPushPlugin
+        var sInstance: AliyunPushPlugin? = null
     }
 
     /// The MethodChannel that will the communication between Flutter and native Android

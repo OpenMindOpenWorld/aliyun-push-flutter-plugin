@@ -3,6 +3,8 @@ package com.aliyun.ams.push
 import android.content.Intent
 import android.os.Bundle
 import com.alibaba.sdk.android.push.AndroidPopupActivity
+import java.util.Timer
+import java.util.TimerTask
 
 class PushPopupActivity : AndroidPopupActivity() {
     companion object {
@@ -10,6 +12,7 @@ class PushPopupActivity : AndroidPopupActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AliyunPushLog.d(TAG, "辅助弹窗已创建")
         super.onCreate(savedInstanceState)
     }
 
@@ -22,7 +25,6 @@ class PushPopupActivity : AndroidPopupActivity() {
                 setClassName(this@PushPopupActivity, "$packageName.MainActivity")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
-
             startActivity(intent)
 
             val arguments = mapOf(
@@ -31,8 +33,21 @@ class PushPopupActivity : AndroidPopupActivity() {
                 "extraMap" to extMap
             )
 
-            AliyunPushPlugin.sInstance.callFlutterMethod("onNotificationOpened", arguments)
-        } catch (e: Exception){
+            val t = Timer()
+            val task = object : TimerTask() {
+                override fun run() {
+                    if (AliyunPushPlugin.sInstance != null) {
+                        t.cancel()
+                        AliyunPushPlugin.sInstance?.callFlutterMethod(
+                            "onNotificationOpened",
+                            arguments
+                        )
+                        AliyunPushLog.d(TAG, "辅助弹窗通知参数: $arguments")
+                    }
+                }
+            }
+            t.schedule(task, 1000, 200)
+        } catch (e: Exception) {
             AliyunPushLog.e(TAG, "打开通知出错: $e")
         }
 
