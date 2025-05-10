@@ -16,6 +16,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     private var channel: FlutterMethodChannel?
     private var notificationCenter: UNUserNotificationCenter?
     private var showNoticeWhenForeground: Bool = false
+    private var initialized: Bool = false
 
     // MARK: - FlutterPlugin
 
@@ -58,6 +59,26 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         let dic = ["error": error.localizedDescription]
         invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
         AliyunPushLog.d("####### ===> APNs register failed, %@", error.localizedDescription)
+    }
+
+    public func application(
+        _ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any]) -> Bool{
+            if let params =  launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary {
+                // TODO: 冷启需延迟调用,否则调用无效(尝试等待flutter代码初始化并完成回调注册)，但理论上也无法保证100%有效，因为取决于app何时完成回调注册.
+                var n = 10
+                Timer.scheduledTimer(withTimeInterval: 1, repeats: true){(t) in
+                    if self.initialized {
+                        t.invalidate()
+                        self.invokeFlutterMethodOnMainThread(method: "onNotificationOpened", arguments: params)
+                        return
+                    }
+                    n -= 1
+                    if n < 1 {
+                        t.invalidate()
+                    }
+                }
+            }
+            return true
     }
 
     // MARK: - Method Handler
@@ -167,6 +188,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
 
         listenerOnChannelOpened()
         registerMessageReceive()
+        initialized = true
     }
 
     // 添加这个辅助方法来确保在主线程上调用Flutter方法
