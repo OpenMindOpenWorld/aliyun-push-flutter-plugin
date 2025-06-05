@@ -28,6 +28,15 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
+    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        AliyunPushLog.d("###### didFinishLaunchingWithOptions launchOptions \(String(describing: launchOptions))")
+        if let launchOptions = launchOptions,
+        let remoteNotification = launchOptions[.remoteNotification] {
+            self._remoteNotification = remoteNotification
+        }
+        return true
+    }
+
     public func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
