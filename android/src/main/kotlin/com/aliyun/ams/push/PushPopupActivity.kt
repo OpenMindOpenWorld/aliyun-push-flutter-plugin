@@ -19,13 +19,11 @@ class PushPopupActivity : AndroidPopupActivity() {
     override fun onSysNoticeOpened(title: String, summary: String, extMap: Map<String, String>) {
         try {
             // 启动MainActivity
-            val intent = Intent().apply {
-                val packageName = packageName
-                setClassName(this@PushPopupActivity, "$packageName.MainActivity")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(launchIntent)
             }
-
-            startActivity(intent)
 
             val arguments = mapOf(
                 "title" to title,
