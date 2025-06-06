@@ -16,6 +16,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     private var channel: FlutterMethodChannel?
     private var notificationCenter: UNUserNotificationCenter?
     private var showNoticeWhenForeground: Bool = false
+    private var remoteNotificationPayload: [AnyHashable: Any]?
 
     // MARK: - FlutterPlugin
 
@@ -28,11 +29,18 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
-    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        AliyunPushLog.d("###### didFinishLaunchingWithOptions launchOptions \(String(describing: launchOptions))")
-        if let launchOptions = launchOptions,
-        let remoteNotification = launchOptions[.remoteNotification] {
-            self._remoteNotification = remoteNotification
+    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
+        // Connect to FCM. This registration token is used to identify this device when sending FCM messages.
+        // FIRApp.configure()
+        // Messaging.messaging().delegate = self
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.current().delegate = self
+        }
+
+        // application.registerForRemoteNotifications()
+        // AliyunPush.registerAPNS(application)
+        if let remoteNotification = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [AnyHashable: Any] {
+            self.remoteNotificationPayload = remoteNotification
         }
         return true
     }
@@ -49,6 +57,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
                 let dic = ["apnsDeviceToken": CloudPushSDK.getApnsDeviceToken()]
                 self.invokeFlutterMethodOnMainThread(
                     method: "onRegisterDeviceTokenSuccess", arguments: dic)
+                AliyunPushLog.d("####### ===> APNs registration with CloudPushSDK successful")
             } else {
                 AliyunPushLog.d(
                     "Register deviceToken failed, error: %@",
@@ -56,9 +65,9 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
                 let dic = ["error": (res.error as NSError?)?.description ?? ""]
                 self.invokeFlutterMethodOnMainThread(
                     method: "onRegisterDeviceTokenFailed", arguments: dic)
+                AliyunPushLog.d("####### ===> APNs registration with CloudPushSDK failed")
             }
         }
-        AliyunPushLog.d("####### ===> APNs register success")
     }
 
     public func application(
@@ -67,6 +76,39 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         let dic = ["error": error.localizedDescription]
         invokeFlutterMethodOnMainThread(method: "onRegisterDeviceTokenFailed", arguments: dic)
         AliyunPushLog.d("####### ===> APNs register failed, %@", error.localizedDescription)
+    }
+
+    // This method handles notifications received when the app is in the foreground or background (but not terminated).
+    // For iOS < 10, this is the primary method. For iOS 10+, it's called if UNUserNotificationCenterDelegate is not set up or for silent pushes.
+    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
+        AliyunPushLog.d("didReceiveRemoteNotification, userInfo = [%@]", userInfo)
+
+        CloudPushSDK.sendNotificationAck(userInfo)
+        self.channel?.invokeMethod("onNotification", arguments: userInfo)
+
+        if let launchNotificationPayload = remoteNotificationPayload {
+            func getMsgId(from payload: [AnyHashable: Any]?) -> String? {
+                guard let payload = payload else { return nil }
+                if let id = payload["m"] as? String {
+                    return id
+                }
+                if let idNum = payload["m"] as? NSNumber {
+                    return idNum.stringValue
+                }
+                return nil
+            }
+
+            let launchMsgId = getMsgId(from: launchNotificationPayload)
+            let incomingMsgId = getMsgId(from: userInfo)
+
+            if let lId = launchMsgId, let iId = incomingMsgId, lId == iId {
+                AliyunPushLog.d("didReceiveRemoteNotification: Matched launch notification. Clearing remoteNotificationPayload. 'onNotificationOpened' should be handled by UNUserNotificationCenter delegate.")
+                self.remoteNotificationPayload = nil
+            }
+        }
+        
+        completionHandler(.newData)
+        return true
     }
 
     // MARK: - Method Handler
@@ -536,6 +578,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             invokeFlutterMethodOnMainThread(method: "onNotificationRemoved", arguments: userInfo)
         }
 
+        remoteNotificationPayload = nil // 清除暂存的启动通知
         completionHandler()
     }
 }
