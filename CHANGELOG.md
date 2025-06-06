@@ -1,3 +1,8 @@
+## 1.3.2
+- 修复点击推送通知冷启动App时onNotificationOpened无效的问题
+- Android SDK 升级至 3.9.4.1
+- iOS SDK 升级至 3.1.1
+
 ## 1.3.1
 
 - iOS SDK 升级至 3.0.0
