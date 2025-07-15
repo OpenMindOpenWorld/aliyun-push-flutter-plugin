@@ -59,7 +59,7 @@ android {
     }
 
     dependencies {
-        api "com.aliyun.ams:alicloud-android-push:3.9.4.1"
+        api "com.aliyun.ams:alicloud-android-push:3.9.5"
 
         api "com.aliyun.ams:alicloud-android-third-push:3.9.4.1"
         api "com.aliyun.ams:alicloud-android-third-push-meizu:3.9.4.1"
