@@ -29,17 +29,20 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
-    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
+    public func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]
+    ) -> Bool {
         // Connect to FCM. This registration token is used to identify this device when sending FCM messages.
         // FIRApp.configure()
         // Messaging.messaging().delegate = self
-        if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().delegate = self
-        }
+        UNUserNotificationCenter.current().delegate = self
 
         // application.registerForRemoteNotifications()
         // AliyunPush.registerAPNS(application)
-        if let remoteNotification = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [AnyHashable: Any] {
+        if let remoteNotification = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification]
+            as? [AnyHashable: Any]
+        {
             self.remoteNotificationPayload = remoteNotification
         }
         return true
@@ -80,7 +83,10 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
 
     // This method handles notifications received when the app is in the foreground or background (but not terminated).
     // For iOS < 10, this is the primary method. For iOS 10+, it's called if UNUserNotificationCenterDelegate is not set up or for silent pushes.
-    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
+    public func application(
+        _ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) -> Bool {
         AliyunPushLog.d("didReceiveRemoteNotification, userInfo = [%@]", userInfo)
 
         CloudPushSDK.sendNotificationAck(userInfo)
@@ -102,11 +108,13 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             let incomingMsgId = getMsgId(from: userInfo)
 
             if let lId = launchMsgId, let iId = incomingMsgId, lId == iId {
-                AliyunPushLog.d("didReceiveRemoteNotification: Matched launch notification. Clearing remoteNotificationPayload. 'onNotificationOpened' should be handled by UNUserNotificationCenter delegate.")
+                AliyunPushLog.d(
+                    "didReceiveRemoteNotification: Matched launch notification. Clearing remoteNotificationPayload. 'onNotificationOpened' should be handled by UNUserNotificationCenter delegate."
+                )
                 self.remoteNotificationPayload = nil
             }
         }
-        
+
         completionHandler(.newData)
         return true
     }
@@ -161,14 +169,27 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     }
 
     private func registerAPNs() {
+        AliyunPushLog.d("####### ===> Starting APNs registration process")
+        NSLog("####### ===> Starting APNs registration process")
+
         notificationCenter = UNUserNotificationCenter.current()
         notificationCenter?.delegate = self
         notificationCenter?.requestAuthorization(options: [.alert, .badge, .sound]) {
             granted, error in
             if granted {
+                AliyunPushLog.d(
+                    "####### ===> Notification permission granted, registering for remote notifications"
+                )
+                NSLog(
+                    "####### ===> Notification permission granted, registering for remote notifications"
+                )
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
                 }
+            } else {
+                let errorMsg = error?.localizedDescription ?? "Permission denied"
+                AliyunPushLog.d("####### ===> Notification permission denied: %@", errorMsg)
+                NSLog("####### ===> Notification permission denied: %@", errorMsg)
             }
         }
     }
@@ -195,12 +216,12 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             return
         }
 
-        registerAPNs()
-
         CloudPushSDK.start(withAppkey: appKey, appSecret: appSecret) { res in
             if res.success {
                 AliyunPushLog.d(
                     "Push SDK init success, deviceId: %@.", CloudPushSDK.getDeviceId() ?? "")
+                // SDK初始化成功后再注册APNs
+                self.registerAPNs()
                 result([KEY_CODE: CODE_SUCCESS])
             } else {
                 AliyunPushLog.d(
@@ -578,7 +599,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             invokeFlutterMethodOnMainThread(method: "onNotificationRemoved", arguments: userInfo)
         }
 
-        remoteNotificationPayload = nil // 清除暂存的启动通知
+        remoteNotificationPayload = nil  // 清除暂存的启动通知
         completionHandler()
     }
 }
