@@ -1,6 +1,6 @@
 # 阿里云移动推送 Flutter 插件
 
-阿里云移动推送 Flutter 插件，集成最新版本推送 SDK（Android `3.9.3` / iOS `3.0.0`），采用 Kotlin 和 Swift 分别实现 Android 和 iOS 平台功能。
+阿里云移动推送 Flutter 插件，集成最新版本Push SDK，采用 Kotlin 和 Swift 分别实现 Android 和 iOS 平台功能。
 
 ## 特性
 - **多端支持**：支持 Android 和 iOS 平台
