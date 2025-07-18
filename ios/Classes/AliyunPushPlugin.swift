@@ -61,6 +61,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
                 self.invokeFlutterMethodOnMainThread(
                     method: "onRegisterDeviceTokenSuccess", arguments: dic)
                 AliyunPushLog.d("####### ===> APNs registration with CloudPushSDK successful")
+                NSLog("NSLog ## ===> APNs registration with CloudPushSDK successful")
             } else {
                 AliyunPushLog.d(
                     "Register deviceToken failed, error: %@",
@@ -170,7 +171,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
 
     private func registerAPNs() {
         AliyunPushLog.d("####### ===> Starting APNs registration process")
-        NSLog("####### ===> Starting APNs registration process")
+        NSLog("NSLog ## ===> Starting APNs registration process")
 
         notificationCenter = UNUserNotificationCenter.current()
         notificationCenter?.delegate = self
@@ -181,7 +182,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
                     "####### ===> Notification permission granted, registering for remote notifications"
                 )
                 NSLog(
-                    "####### ===> Notification permission granted, registering for remote notifications"
+                    "NSLog ## ===> Notification permission granted, registering for remote notifications"
                 )
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
@@ -189,7 +190,7 @@ public class AliyunPushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             } else {
                 let errorMsg = error?.localizedDescription ?? "Permission denied"
                 AliyunPushLog.d("####### ===> Notification permission denied: %@", errorMsg)
-                NSLog("####### ===> Notification permission denied: %@", errorMsg)
+                NSLog("NSLog ## ===> Notification permission denied: %@", errorMsg)
             }
         }
     }
