@@ -15,7 +15,7 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'AlicloudPush', '>= 3.2.1', '< 4.0'
+  s.dependency 'AlicloudPush', '>= 3.2.3', '< 4.0'
   s.platform = :ios, '12.0'
   s.static_framework = true
 
