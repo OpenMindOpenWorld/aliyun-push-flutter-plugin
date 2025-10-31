@@ -13,6 +13,27 @@
 
 请查看 [example](/example/) 了解如何在项目中集成和使用该插件。
 
+## 注意
+在 android / build.gradle 的 allprojects 的 repositories 中添加Maven仓库地址
+```
+repositories {
+    google()
+    mavenCentral()
+
+    maven {
+        url "https://maven.aliyun.com/nexus/content/repositories/releases/"
+    }
+
+    maven {
+        url "https://developer.huawei.com/repo/"
+    }
+
+    maven {
+        url "https://developer.hihonor.com/repo"
+    }
+}
+```
+
 ## 新增 APIs
 
 ### ~~[已废弃]iOS 关闭推送消息通道~~
